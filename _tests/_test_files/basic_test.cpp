@@ -30,4 +30,3 @@ int main(int argc, char **argv) {
   std::cout<<"\n\n----------running basic_test.cpp---------\n\n"<<std::endl;
   return RUN_ALL_TESTS();
 }
-
