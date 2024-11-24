@@ -231,6 +231,18 @@ void animate::processEvents()
                              inputbar.getPt(1), inputbar.getPt(3))){
                     inputUID = 2;
                 }
+                else if(isOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y), 
+                             sidebar.getPt(1), sidebar.getPt(3))){
+                    inputUID = 1;
+                    int rowNum = sidebar.overlapText(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
+                    if(rowNum >= 3){
+                        inputStr = sidebar[rowNum];
+                        command = 2;
+                        _info->equation = inputStr;
+                        system.set_info(_info);
+                        system.Step(command);
+                    }
+                }
             }
 
             break;

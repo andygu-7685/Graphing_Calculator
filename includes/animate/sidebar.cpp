@@ -82,11 +82,11 @@ sf::Vector2f Sidebar::getPt(int corner){
 
 void Sidebar::draw(sf::RenderWindow &window)
 {
-    const double VERTICAL_LINE_SPACING = 5.0;
+    const double VERTICAL_LINE_SPACING = 10.0;
     const double LEFT_MARGIN = 10.0;
 
     window.draw(rect);
-    float height = 10;
+    float height = 10.0;
 
     for (vector<string>::iterator it = items.begin();
          it != items.end(); it++)
@@ -110,7 +110,38 @@ void Sidebar::draw(sf::RenderWindow &window)
     }
 }
 
-string &Sidebar::operator[](int index)
+
+int Sidebar::overlapText(sf::Vector2f testPos){
+    const double VERTICAL_LINE_SPACING = 10.0;
+    float height = 10.0;
+
+    for (vector<string>::iterator it = items.begin(); it != items.end(); it++)
+    {
+        if (it->length() == 0){
+            sb_text.setString(" ");
+        }
+        else{
+            sb_text.setString(it->c_str());
+        }
+
+        double buttom = height + sb_text.getLocalBounds().height;
+        if(testPos.y > height && testPos.y < buttom && 
+           testPos.x > _left && testPos.x < SCREEN_WIDTH)
+            return it - items.begin();
+        height = buttom + VERTICAL_LINE_SPACING;
+    }
+    return -1;
+}
+
+
+
+
+string& Sidebar::operator[](int index)
+{
+    return items[index];
+}
+
+const string Sidebar::operator[](int index) const
 {
     return items[index];
 }
