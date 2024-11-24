@@ -11,7 +11,8 @@ class Sidebar
 {
 public:
     Sidebar();
-    Sidebar(float left, float top, float width, float height);
+    Sidebar(float left, float top, float width, float height, int UIDIn);
+    sf::Vector2f getPt(int corner);
     void draw(sf::RenderWindow& window);
     string& operator [](int index);
 private:
@@ -24,6 +25,7 @@ private:
     float _top;
     float _width;
     float _height;
+    int UID;
 };
 
 #endif // SIDEBAR_H

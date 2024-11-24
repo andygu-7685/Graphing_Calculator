@@ -4,7 +4,8 @@ Sidebar::Sidebar()
 {
 }
 
-Sidebar::Sidebar(float left, float top, float width, float height) : _left(left), _top(top), _width(width), _height(height) 
+Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn) 
+    : _left(left), _top(top), _width(width), _height(height), UID(UIDIn)
 {
     cout << "Sidebar CTOR: TOP" << endl;
     items.reserve(50);
@@ -57,6 +58,27 @@ Sidebar::Sidebar(float left, float top, float width, float height) : _left(left)
     }
     cout << "Sidebar: CTOR: Exit." << endl;
 }
+
+
+//1 = top left
+//2 = top right
+//3 = bottom right
+//4 = bottom left
+//Position are in screen coordinate
+sf::Vector2f Sidebar::getPt(int corner){
+    if(corner == 1)
+        return sf::Vector2f(_left, _top);
+    if(corner == 2)
+        return sf::Vector2f(_left + _width, _top);
+    if(corner == 3)
+        return sf::Vector2f(_left + _width, _top + _height);
+    if(corner == 4)
+        return sf::Vector2f(_left, _top + _height);
+    return sf::Vector2f();
+}
+
+
+
 
 void Sidebar::draw(sf::RenderWindow &window)
 {

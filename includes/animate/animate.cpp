@@ -7,7 +7,7 @@ using namespace std;
 
 
 
-animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT)
+animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT, 1), inputbar(0, 0, SIDE_BAR, 100, 2)
 {
     cout << "animate CTOR: TOP" << endl;
     window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "SFML window!");
@@ -19,7 +19,8 @@ animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT)
     //   at that point, the constructor of the System class will take a vector
     //   of objects created by the animate object.
     //   animate will
-    inputStr = "x/10 + sin(x)";
+    inputStr = "1";
+    history = vector<string>();
     _info = new graph_info( inputStr, 
                             sf::Vector2f(SCREEN_HEIGHT, SCREEN_HEIGHT), 
                             sf::Vector2f(SCREEN_HEIGHT / 2.0 , SCREEN_HEIGHT / 2.0),
@@ -69,6 +70,7 @@ void animate::Draw()
     }
 
     sidebar.draw(window);
+    inputbar.draw(window);
 
     //- - - - - - - - - - - - - - - - - - -
     // getPosition() gives you screen coords, getPosition(window) gives you window coords
@@ -94,6 +96,14 @@ void animate::update()
 
         // mouse location text for sidebar:
         sidebar[SB_MOUSE_POSITION] = mouse_pos_string(window);
+
+        int lineNum = 3;
+        vector<string> historyDup = history;
+        while(lineNum < 10 && !historyDup.empty()){
+            sidebar[lineNum] = historyDup.back();
+            historyDup.pop_back();
+            lineNum++;
+        }
     }
 }
 
@@ -169,45 +179,27 @@ void animate::processEvents()
 
                 break;
             case sf::Keyboard::I:
-            case sf::Keyboard::O:
-            
-                {
-                    //screen origin in plotting coordinate
-                sf::Vector2f ScrO((_info->dimensions.x/2 - _info->origin.x) / _info->scale.x , 
-                                  (_info->dimensions.y/2 - _info->origin.y) / _info->scale.y);
-
-    
-
-
-                if(event.key.code == sf::Keyboard::I && _info->domain.y - _info->domain.x >= 3 && _info->range.y - _info->range.x >= 3){
-                    sidebar[SB_KEY_PRESSED] = "ZOOM IN";
-                    command = 7;
-                    _info->domain.x += 1;
-                    _info->domain.y -= 1;
-                    _info->range.x += 1;
-                    _info->range.y -= 1;
-                }
-                else if(event.key.code == sf::Keyboard::O){
-                    sidebar[SB_KEY_PRESSED] = "ZOOM OUT";
-                    command = 8;
-                    _info->domain.x -= 1;
-                    _info->domain.y += 1;
-                    _info->range.x -= 1;
-                    _info->range.y += 1;
-                }
-                sidebar[SB_KEY_PRESSED + 1] = to_string(_info->domain.x) + 
-                                              to_string(_info->domain.y);
-                sidebar[SB_KEY_PRESSED + 2] = to_string(_info->range.x) + 
-                                              to_string(_info->range.y);
-
-                _info->reset_scale();
-                _info->origin = sf::Vector2f (_info->dimensions.x/2 - (ScrO.x * _info->scale.x), 
-                                              _info->dimensions.y/2 - (ScrO.y * _info->scale.y));
-                
+                sidebar[SB_KEY_PRESSED] = "ZOOM IN";
+                command = 7;
+                ZoomScr(1, _info, window, 0);
                 system.set_info(_info);
                 system.Step(command);
+                break;
+            case sf::Keyboard::O:
+                sidebar[SB_KEY_PRESSED] = "ZOOM OUT";
+                command = 8;
+                ZoomScr(2, _info, window, 0);
+                system.set_info(_info);
+                system.Step(command);
+                break;
+            case sf::Keyboard::Enter:
+                if(inputUID == 2){
+                    command = 2;
+                    _info->equation = inputStr;
+                    history.push_back(inputStr);
+                    system.set_info(_info);
+                    system.Step(command);
                 }
-
                 break;
             case sf::Keyboard::Escape:
                 sidebar[SB_KEY_PRESSED] = "ESC: EXIT";
@@ -230,16 +222,38 @@ void animate::processEvents()
             // Do something with it if you need to...
             break;
         case sf::Event::MouseButtonReleased:
-            if (event.mouseButton.button == sf::Mouse::Right)
-            {
+            if (event.mouseButton.button == sf::Mouse::Right){
                 sidebar[SB_MOUSE_CLICKED] = "RIGHT CLICK " + mouse_pos_string(window);
             }
-            else
-            {
+            else{
                 sidebar[SB_MOUSE_CLICKED] = "LEFT CLICK " + mouse_pos_string(window);
+                if(isOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y), 
+                             inputbar.getPt(1), inputbar.getPt(3))){
+                    inputUID = 2;
+                }
+            }
+
+            break;
+        case sf::Event::MouseWheelScrolled:
+            if(event.mouseWheelScroll.delta != 0 && mouseIn){
+                ZoomScr(3, _info, window, event.mouseWheelScroll.delta);
+                sidebar[SB_KEY_PRESSED] = "SCROLLING";
+                command = 9;
+                system.set_info(_info);
+                system.Step(command);
             }
             break;
-
+        case sf::Event::TextEntered:
+            if(event.text.unicode == 8 && inputUID == 2){
+                assert(!inputStr.empty());
+                inputStr.pop_back();
+                inputbar[1] = inputStr;
+            }
+            else if (event.text.unicode < 128 && inputUID == 2){
+                inputStr.push_back(static_cast<char>(event.text.unicode));
+                inputbar[1] = inputStr;
+            }
+            break;
         default:
             break;
         }
@@ -267,6 +281,68 @@ string mouse_pos_string(sf::RenderWindow &window)
            ")";
 }
 
+
+
+//1 = "i"
+//2 = "o"
+//3 = mouse scroll
+void ZoomScr(int input_type, graph_info* _info, sf::RenderWindow &window, float mouse_delta){
+    //screen origin in plotting coordinate
+    double xratio1(1), xratio2(1);
+    double yratio1(1), yratio2(1);
+    double mousex = sf::Mouse::getPosition(window).x;
+    double mousey = sf::Mouse::getPosition(window).y;
+    
+    int Zoom = 3;               // -1 = zoom out, 1 = zoom in, 3 = no zoom
+    double ZoomX(_info->dimensions.x/2), ZoomY(_info->dimensions.y/2);
+    if(input_type == 3 && mousex < _info->dimensions.x 
+                       && mousey < _info->dimensions.y
+                       && mousex > 0
+                       && mousey > 0){
+        ZoomX = mousex;
+        ZoomY = mousey;
+        xratio1 = mousex / _info->dimensions.x;
+        xratio2 = (_info->dimensions.x - mousex) / _info->dimensions.x;
+        yratio1 = mousey / _info->dimensions.y;
+        yratio2 = (_info->dimensions.y - mousey) / _info->dimensions.y;
+    }
+
+    sf::Vector2f ScrO((ZoomX - _info->origin.x) / _info->scale.x , 
+                        (ZoomY - _info->origin.y) / _info->scale.y);
+
+    if(input_type == 1 && _info->domain.y - _info->domain.x >= 3 && _info->range.y - _info->range.x >= 3)
+        Zoom = 1;
+    if(input_type == 2)
+        Zoom = -1;
+    
+    if( input_type == 3 && mouse_delta > 0 && _info->domain.y - _info->domain.x >= 3 && _info->range.y - _info->range.x >= 3)
+        Zoom = 1;
+    if(input_type == 3 && mouse_delta < 0)
+        Zoom = -1;
+
+    if(Zoom == 1 || Zoom == -1){
+        _info->domain.x += xratio1 * ZOOMRATE * Zoom;
+        _info->domain.y -= xratio2 * ZOOMRATE * Zoom;
+        _info->range.x += yratio2 * ZOOMRATE * Zoom;
+        _info->range.y -= yratio1 * ZOOMRATE * Zoom;
+    }
+
+
+
+    _info->reset_scale();
+    _info->origin = sf::Vector2f (ZoomX - (ScrO.x * _info->scale.x), 
+                                  ZoomY - (ScrO.y * _info->scale.y));
+}
+
+
+
+
+//testPos: position you want test
+//boxPt1: the top left of bounding box
+//boxPt2: the bottom right of bounding box
+bool isOverlap(sf::Vector2f testPos, sf::Vector2f boxPt1, sf::Vector2f boxPt2){
+    return (testPos.x > boxPt1.x && testPos.x < boxPt2.x && testPos.y > boxPt1.y && testPos.y < boxPt2.y);
+}
 
 
 

@@ -43,12 +43,14 @@ void System::set_info(graph_info* _infoIn){
 void System::Step(int& command)
 {
     switch(command){
+        case 2:
         case 3:
         case 4:
         case 5:
         case 6:
         case 7:
         case 8:
+        case 9:
                 _g.calc_plot();
             break;
         default:

@@ -20,6 +20,7 @@ public:
     animate();
     void run();
     void processEvents();
+    
     void update();
     void render();
     void Draw();
@@ -33,9 +34,14 @@ private:
     sf::Text myTextLabel;               //text to draw on main screen
     bool mouseIn;                       //mouse is in the screen
     Sidebar sidebar;                    //rectangular message sidebar
+    Sidebar inputbar;
     string inputStr;
+    vector<string> history;
+    int inputUID;
 };
 
 string mouse_pos_string(sf::RenderWindow& window);
+void ZoomScr(int input_type, graph_info* _info, sf::RenderWindow& window, float mouse_delta = 0);
+bool isOverlap(sf::Vector2f testPos, sf::Vector2f boxPt1, sf::Vector2f boxPt2);
 
 #endif // GAME_H
