@@ -11,28 +11,13 @@
 class graph{
     public:
     
-    graph(){
-
-    }
+    graph(){}
 
 
-    graph(graph_info* _infoIn){
-        _info = _infoIn;
-        plotter = plot(_infoIn);
-        pt = sf::CircleShape(5);
-        points = vector<sf::Vector2f>();
-    }
+    graph(graph_info* _infoIn);
 
-
-    void calc_plot(){
-        translate T(_info);
-        for(int i = _info->domain.x; i < _info->domain.y; i++){
-            sf::Vector2f coord = plotter.get_xy(i);
-            coord = T(coord);
-            points.push_back(coord);
-        }
-    }
-
+    void set_info(graph_info* _infoIn);
+    void calc_plot();
     void draw(sf::RenderWindow &window);
 
 

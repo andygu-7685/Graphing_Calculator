@@ -12,7 +12,7 @@
 #include "graph_info.h"
 #include "rpn.h"
 #include "shunting_yard.h"
-#include "strToQueue.h"
+
 
 
 class animate{
@@ -34,7 +34,6 @@ private:
     bool mouseIn;                       //mouse is in the screen
     Sidebar sidebar;                    //rectangular message sidebar
     string inputStr;
-
 };
 
 string mouse_pos_string(sf::RenderWindow& window);

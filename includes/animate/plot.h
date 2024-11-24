@@ -14,6 +14,7 @@
 #include "rightparen.h"
 #include "variable.h"
 #include "trig.h"
+#include "translate.h"
 
 
 
@@ -21,30 +22,25 @@
 class plot{
     public:
     
-    plot(){
-
-    }
+    plot(){}
 
 
-    plot(graph_info* _infoIn){
-        _info = _infoIn;
-    }
+    plot(graph_info* _infoIn);
+    void set_info(graph_info* _infoIn);
 
 
-    sf::Vector2f get_xy(int input_x){
-        Queue<Token*> infix1 = strToQueue(_info->equation, _info->equLst, -1);
-        ShuntingYard sy1(infix1);
-        Queue<Token*> postfix1 = sy1.postfix();
-        RPN rpn1(postfix1);
-        double y = rpn1(input_x);
-        return sf::Vector2f(input_x, y);
-    }
+    vector<sf::Vector2f> operator()();
+
+
+    sf::Vector2f get_xy(double input_x);
 
 
 
     private:
     graph_info* _info;
+    vector<sf::Vector2f> points;
     Queue<Token*> postfix;
+    translate T;
 
 };
 

@@ -19,23 +19,13 @@
 class translate{
     public:
     
-    translate(){
-        
-    }
+    translate(){}
 
 
-    translate(graph_info* _infoIn){
-        _info = _infoIn;
-    }
+    translate(graph_info* _infoIn);
+    void set_info(graph_info* _infoIn);
 
-
-    sf::Vector2f operator()(sf::Vector2f coord){
-        double domain = _info->domain.y - _info->domain.x;
-        double factor = (_info->dimensions.x) / domain;
-        double newX = (coord.x * factor) + _info->origin.x;
-        double newY = -(coord.y * factor) + _info->origin.y;
-        return sf::Vector2f(newX, newY);
-    }
+    sf::Vector2f operator()(sf::Vector2f coord);
 
 
 

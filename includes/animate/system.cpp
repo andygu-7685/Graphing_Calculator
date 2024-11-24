@@ -21,21 +21,40 @@ System::System()
 
 
 
-System::System(graph_info* _info)
+System::System(graph_info* _infoIn)
 {
-    _g = graph(_info);
+    _info = _infoIn;
+    _g = graph(_infoIn);
     _g.calc_plot();
 }
 //------------------------------------------------------------------
 //------------------------------------------------------------------
 
 
+void System::set_info(graph_info* _infoIn){
+    _info = _infoIn; 
+    _g.set_info(_info);
+}
 
 
 
-void System::Step(int command)
+
+//if 1 = function changed or zoomed 
+void System::Step(int& command)
 {
-    
+    switch(command){
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+                _g.calc_plot();
+            break;
+        default:
+            break;
+    }
+    command = 0;
 }
 
 

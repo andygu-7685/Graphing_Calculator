@@ -65,7 +65,7 @@ void clearQueue(Queue<char>& charQueue){
 }
 
 Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn){
-    cout << "inputStr :" << inputStr;
+    //cout << "inputStr :" << inputStr;
     bool inFn = false;
     bool strStop = false;
     string opStr;
@@ -75,7 +75,7 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn){
 
     for(int i = 0; i < inputStr.length(); i++){
       strStop = true;
-      cout << "the current index: "<< i << endl;
+      //cout << "the current index: "<< i << endl;
       switch(inputStr[i]){
         case '+':
         case '-':

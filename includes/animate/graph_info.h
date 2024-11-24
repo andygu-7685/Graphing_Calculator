@@ -21,16 +21,19 @@ struct graph_info {
     sf::Vector2f origin;
     sf::Vector2f scale;
     sf::Vector2f domain;
+    sf::Vector2f range;
     int totalpt;
 
-    graph_info(
-        std::string equ,
-        sf::Vector2f dim,
-        sf::Vector2f org,
-        sf::Vector2f scl,
-        sf::Vector2f dom,
-        int tot
-    ) : equation(equ), dimensions(dim), origin(org), scale(scl), domain(dom), totalpt(tot) {}
+    graph_info(std::string equ, sf::Vector2f dim, sf::Vector2f org, sf::Vector2f rang, sf::Vector2f dom, int tot) 
+    : equation(equ), dimensions(dim), origin(org), range(rang), domain(dom), totalpt(tot) {
+        scale.x = dimensions.x / (domain.y - domain.x);
+        scale.y = dimensions.y / (range.y - range.x);
+    }
+
+    void reset_scale(){
+        scale.x = dimensions.x / (domain.y - domain.x);
+        scale.y = dimensions.y / (range.y - range.x);
+    }
 
 };
 

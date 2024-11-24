@@ -4,8 +4,10 @@
 using namespace std;
 #include "system.h"
 
-animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT)
 
+
+
+animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT)
 {
     cout << "animate CTOR: TOP" << endl;
     window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "SFML window!");
@@ -17,9 +19,12 @@ animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT)
     //   at that point, the constructor of the System class will take a vector
     //   of objects created by the animate object.
     //   animate will
-    inputStr = "X + 1";
-    _info = new graph_info(inputStr, sf::Vector2f(SCREEN_HEIGHT, SCREEN_HEIGHT), sf::Vector2f(SCREEN_HEIGHT / 2.0 , SCREEN_HEIGHT / 2.0),
-                        sf::Vector2f(1.0, 1.0), sf::Vector2f(-20, 20), 100);
+    inputStr = "x/10 + sin(x)";
+    _info = new graph_info( inputStr, 
+                            sf::Vector2f(SCREEN_HEIGHT, SCREEN_HEIGHT), 
+                            sf::Vector2f(SCREEN_HEIGHT / 2.0 , SCREEN_HEIGHT / 2.0),
+                            sf::Vector2f(-20, 20),
+                            sf::Vector2f(-20, 20), 100);
     system = System(_info);
     window.setFramerateLimit(60);
 
@@ -101,8 +106,10 @@ void animate::render()
 
 void animate::processEvents()
 {
+
     sf::Event event;
     float mouseX, mouseY;
+
     while (window.pollEvent(event)) // or waitEvent
     {
         // check the type of the event...
@@ -119,11 +126,88 @@ void animate::processEvents()
             {
             case sf::Keyboard::Left:
                 sidebar[SB_KEY_PRESSED] = "LEFT ARROW";
-                command = 4;
+                command = 3;
+
+                _info->origin.x -= PANINC * _info->scale.x;
+                _info->domain.x += PANINC;
+                _info->domain.y += PANINC;
+                system.set_info(_info);
+                system.Step(command);
+
                 break;
             case sf::Keyboard::Right:
                 sidebar[SB_KEY_PRESSED] = "RIGHT ARROW";
+                command = 4;
+
+                _info->origin.x += PANINC * _info->scale.x;
+                _info->domain.x -= PANINC;
+                _info->domain.y -= PANINC;
+                system.set_info(_info);
+                system.Step(command);
+
+                break;
+            case sf::Keyboard::Up:
+                sidebar[SB_KEY_PRESSED] = "UP ARROW";
+                command = 5;
+
+                _info->origin.y -= PANINC * _info->scale.y;
+                _info->range.x += PANINC;
+                _info->range.y += PANINC;
+                system.set_info(_info);
+                system.Step(command);
+
+                break;
+            case sf::Keyboard::Down:
+                sidebar[SB_KEY_PRESSED] = "DOWN ARROW";
                 command = 6;
+
+                _info->origin.y += PANINC * _info->scale.y;
+                _info->range.x -= PANINC;
+                _info->range.y -= PANINC;
+                system.set_info(_info);
+                system.Step(command);
+
+                break;
+            case sf::Keyboard::I:
+            case sf::Keyboard::O:
+            
+                {
+                    //screen origin in plotting coordinate
+                sf::Vector2f ScrO((_info->dimensions.x/2 - _info->origin.x) / _info->scale.x , 
+                                  (_info->dimensions.y/2 - _info->origin.y) / _info->scale.y);
+
+    
+
+
+                if(event.key.code == sf::Keyboard::I && _info->domain.y - _info->domain.x >= 3 && _info->range.y - _info->range.x >= 3){
+                    sidebar[SB_KEY_PRESSED] = "ZOOM IN";
+                    command = 7;
+                    _info->domain.x += 1;
+                    _info->domain.y -= 1;
+                    _info->range.x += 1;
+                    _info->range.y -= 1;
+                }
+                else if(event.key.code == sf::Keyboard::O){
+                    sidebar[SB_KEY_PRESSED] = "ZOOM OUT";
+                    command = 8;
+                    _info->domain.x -= 1;
+                    _info->domain.y += 1;
+                    _info->range.x -= 1;
+                    _info->range.y += 1;
+                }
+                sidebar[SB_KEY_PRESSED + 1] = to_string(_info->domain.x) + 
+                                              to_string(_info->domain.y);
+                sidebar[SB_KEY_PRESSED + 2] = to_string(_info->range.x) + 
+                                              to_string(_info->range.y);
+
+                _info->reset_scale();
+                _info->origin = sf::Vector2f (_info->dimensions.x/2 - (ScrO.x * _info->scale.x), 
+                                              _info->dimensions.y/2 - (ScrO.y * _info->scale.y));
+                
+                system.set_info(_info);
+                system.Step(command);
+                }
+
                 break;
             case sf::Keyboard::Escape:
                 sidebar[SB_KEY_PRESSED] = "ESC: EXIT";
@@ -148,14 +232,11 @@ void animate::processEvents()
         case sf::Event::MouseButtonReleased:
             if (event.mouseButton.button == sf::Mouse::Right)
             {
-                sidebar[SB_MOUSE_CLICKED] = "RIGHT CLICK " +
-                                            mouse_pos_string(window);
-
+                sidebar[SB_MOUSE_CLICKED] = "RIGHT CLICK " + mouse_pos_string(window);
             }
             else
             {
-                sidebar[SB_MOUSE_CLICKED] = "LEFT CLICK " +
-                                            mouse_pos_string(window);
+                sidebar[SB_MOUSE_CLICKED] = "LEFT CLICK " + mouse_pos_string(window);
             }
             break;
 
