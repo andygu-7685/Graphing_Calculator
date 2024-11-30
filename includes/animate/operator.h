@@ -25,9 +25,11 @@ class Operator : public Token{
     double evaluate(double left, double right);
 
     virtual double evaluate() override;
+    virtual int errorReport()override;
 
     char get_op()const override{ return _op; }
     int get_prec()const override{ return _prec; }
+    
 
     private:
     int _prec;

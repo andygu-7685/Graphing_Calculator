@@ -51,5 +51,10 @@
         return 'a';
     }
 
+    int Token::errorReport(){
+        cout << "Token error Report function excuted";
+        return 0;
+    }
+
 
 

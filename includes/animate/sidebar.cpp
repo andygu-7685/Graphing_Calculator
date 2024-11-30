@@ -9,6 +9,8 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn)
 {
     cout << "Sidebar CTOR: TOP" << endl;
     items.reserve(50);
+    VERTICAL_LINE_SPACING = 10.0;
+    LEFT_MARGIN = 10.0;
 
     // set up the sidebar rectangle:
     rect.setFillColor(sf::Color(105, 105, 105)); //(192,192,192)); //silver
@@ -82,11 +84,8 @@ sf::Vector2f Sidebar::getPt(int corner){
 
 void Sidebar::draw(sf::RenderWindow &window)
 {
-    const double VERTICAL_LINE_SPACING = 10.0;
-    const double LEFT_MARGIN = 10.0;
-
     window.draw(rect);
-    float height = 10.0;
+    float height = _top + 10.0;
 
     for (vector<string>::iterator it = items.begin();
          it != items.end(); it++)
@@ -112,22 +111,22 @@ void Sidebar::draw(sf::RenderWindow &window)
 
 
 int Sidebar::overlapText(sf::Vector2f testPos){
-    const double VERTICAL_LINE_SPACING = 10.0;
-    float height = 10.0;
+    float height = _top + 10.0;
 
     for (vector<string>::iterator it = items.begin(); it != items.end(); it++)
     {
         if (it->length() == 0){
-            sb_text.setString(" ");
+            sb_text.setString("A");
         }
         else{
             sb_text.setString(it->c_str());
         }
 
-        double buttom = height + sb_text.getLocalBounds().height;
+        float buttom = height + sb_text.getLocalBounds().height;
         if(testPos.y > height && testPos.y < buttom && 
-           testPos.x > _left && testPos.x < SCREEN_WIDTH)
-            return it - items.begin();
+           testPos.x > _left && testPos.x < _left + _width){
+                return it - items.begin();
+           }
         height = buttom + VERTICAL_LINE_SPACING;
     }
     return -1;

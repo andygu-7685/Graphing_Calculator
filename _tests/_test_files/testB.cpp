@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include <iostream>
 #include <iomanip>
+#include "../../includes/animate/animate.h"
 using namespace std;
 
 
@@ -8,10 +9,14 @@ using namespace std;
 
 bool test_stub(bool debug = false)
 {
-  if (debug){
-    cout << "testB:: test-sub() entering test_sub" << endl;
-  }
 
+
+
+
+
+
+
+    
   return true;
 }
 

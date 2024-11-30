@@ -12,15 +12,15 @@
 
 
 
-class Trig : public Operator{
+class compare : public Operator{
     public:
 
-    Trig();
+    compare();
 
-    Trig(string trigFn);
 
-    double evaluate(double uniInput) override;
-    int errorReport()override { return 0; }
+
+    double evaluate(double op1, double op2) override;
+
     char get_trig()const override{ return _trig[2]; }
 
     private:

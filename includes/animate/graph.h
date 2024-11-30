@@ -5,6 +5,8 @@
 #include "graph_info.h"
 #include "plot.h"
 #include "translate.h"
+#include "constants.h"
+
 
 
 
@@ -19,6 +21,7 @@ class graph{
     void set_info(graph_info* _infoIn);
     void calc_plot();
     void draw(sf::RenderWindow &window);
+    int errorReport(){ return errorFlag; }
 
 
     private:
@@ -26,6 +29,7 @@ class graph{
     sf::CircleShape pt;
     vector<sf::Vector2f> points;
     plot plotter;
+    int errorFlag;
 
 
 };

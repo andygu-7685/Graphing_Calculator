@@ -32,9 +32,9 @@ class RPN{
 
     RPN( Queue<Token*> input_q );
 
-    double operator()(double fnInput = 0);
+    double operator()(int& errorFlag, double fnInput = 0);
 
-    double rpn( Queue<Token*> input_q = Queue<Token*>(), double fnInput = 0 );
+    double rpn( int& errorFlag, Queue<Token*> input_q = Queue<Token*>(), double fnInput = 0 );
 
     void set_input( Queue<Token*> input_q );
 

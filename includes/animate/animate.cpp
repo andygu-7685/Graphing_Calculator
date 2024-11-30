@@ -1,14 +1,32 @@
 #include "animate.h"
 #include "constants.h"
 #include <iostream>
+
 using namespace std;
 #include "system.h"
 
 
+const vector<string> errorMsg = {   "No Error",
+                                    "Error: Invalid function name.",
+                                    "Error: the function should not self reference.",
+                                    "Error: the function you referenced do not exist.",
+                                    "Error: missing leftparen.",
+                                    "Error: unknown Input.",
+                                    "Error: missing operand.",
+                                    "Error: invalid input.",
+                                    "Error: unknown Input.",
+                                    "Error: divide by zero." };
 
 
-animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT, 1), inputbar(0, 0, SIDE_BAR, 100, 2)
+
+animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT - 105, 1), inputbar(0, 0, SIDE_BAR, 100, 2), 
+                     settingbar(WORK_PANEL, 700, SIDE_BAR, 100, 3)
 {
+
+
+
+
+
     cout << "animate CTOR: TOP" << endl;
     window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "SFML window!");
     // VideoMode class has functions to detect screen size etc.
@@ -19,8 +37,41 @@ animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT, 1), inputba
     //   at that point, the constructor of the System class will take a vector
     //   of objects created by the animate object.
     //   animate will
-    inputStr = "1";
+    inputStr = "";
+
+
+
+
+
+    inputbar[0] = "Input equation: ";
+    settingbar[ST_SAVE] = "SAVE HISTORY";
+    settingbar[ST_CLEAR] = "CLEAR HISTORY";
     history = vector<string>();
+    string metaData;
+    string equationData;
+    ifstream fin("historyData.txt");
+
+    if(fin.fail()){
+        cout << "could not open file";
+        exit(3);
+    }
+
+    getline(fin, metaData);
+    cout << "equationData:" << endl;
+    if(metaData == "Base:FileState:Data:"){
+        while(getline(fin, equationData)){
+            history.push_back(equationData);
+            cout << equationData << endl;
+        }        
+    }
+    fin.close();
+
+
+
+
+
+
+
     _info = new graph_info( inputStr, 
                             sf::Vector2f(SCREEN_HEIGHT, SCREEN_HEIGHT), 
                             sf::Vector2f(SCREEN_HEIGHT / 2.0 , SCREEN_HEIGHT / 2.0),
@@ -71,7 +122,9 @@ void animate::Draw()
 
     sidebar.draw(window);
     inputbar.draw(window);
+    settingbar.draw(window);
 
+    
     //- - - - - - - - - - - - - - - - - - -
     // getPosition() gives you screen coords, getPosition(window) gives you window coords
     // cout<<"mosue pos: "<<sf::Mouse::getPosition(window).x<<", "<<sf::Mouse::getPosition(window).y<<endl;
@@ -87,6 +140,7 @@ void animate::update()
 {
     // cause changes to the data for the next frame
     system.Step(command);
+
     command = 0;
     if (mouseIn)
     {
@@ -99,7 +153,7 @@ void animate::update()
 
         int lineNum = 3;
         vector<string> historyDup = history;
-        while(lineNum < 10 && !historyDup.empty()){
+        while(lineNum < 25 && !historyDup.empty()){
             sidebar[lineNum] = historyDup.back();
             historyDup.pop_back();
             lineNum++;
@@ -116,6 +170,10 @@ void animate::render()
 
 void animate::processEvents()
 {
+
+
+
+
 
     sf::Event event;
     float mouseX, mouseY;
@@ -196,9 +254,16 @@ void animate::processEvents()
                 if(inputUID == 2){
                     command = 2;
                     _info->equation = inputStr;
-                    history.push_back(inputStr);
                     system.set_info(_info);
                     system.Step(command);
+
+                    if(system.errorReport() != 0){
+                        inputbar[0] = errorMsg[system.errorReport()];
+                    }
+                    else{
+                        inputbar[0] = "Input equation: "; 
+                        history.push_back(inputStr);
+                    }
                 }
                 break;
             case sf::Keyboard::Escape:
@@ -229,19 +294,41 @@ void animate::processEvents()
                 sidebar[SB_MOUSE_CLICKED] = "LEFT CLICK " + mouse_pos_string(window);
                 if(isOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y), 
                              inputbar.getPt(1), inputbar.getPt(3))){
-                    inputUID = 2;
+                    inputUID = inputbar.getUID();
                 }
                 else if(isOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y), 
                              sidebar.getPt(1), sidebar.getPt(3))){
-                    inputUID = 1;
+                    cout << "clicked sidebar:";
+                    inputUID = sidebar.getUID();
                     int rowNum = sidebar.overlapText(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
-                    if(rowNum >= 3){
+                    if(rowNum >= 3 && sidebar[rowNum] != ""){
                         inputStr = sidebar[rowNum];
                         command = 2;
                         _info->equation = inputStr;
                         system.set_info(_info);
                         system.Step(command);
                     }
+                }
+                else if(isOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y), 
+                             settingbar.getPt(1), settingbar.getPt(3))){
+                    cout << "clicked setting bar:";
+                    inputUID = settingbar.getUID();
+                    int rowNum = settingbar.overlapText(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
+                    if(rowNum == ST_SAVE){
+                        cout << "save file\n";
+                        clearfile("historyData.txt", "Base:FileState:Data:");
+                        ofstream historyIn("historyData.txt", ios::app);
+                        while(!history.empty()){
+                            historyIn << history.begin()->c_str() << "\n";
+                            history.erase(history.begin());
+                        }
+                        historyIn.close();
+                    }
+                    else if(rowNum == ST_CLEAR){
+                        cout << "clear file\n";
+                        clearfile("historyData.txt", "Base:FileState:Empty:");
+                    }
+
                 }
             }
 
@@ -257,8 +344,13 @@ void animate::processEvents()
             break;
         case sf::Event::TextEntered:
             if(event.text.unicode == 8 && inputUID == 2){
-                assert(!inputStr.empty());
-                inputStr.pop_back();
+                if(!inputStr.empty()){
+                    inputStr.pop_back();
+                    inputbar[1] = inputStr;
+                }
+            }
+            else if (event.text.unicode == 13 && inputUID == 2){
+                //dont push anything when Enter is pressed
                 inputbar[1] = inputStr;
             }
             else if (event.text.unicode < 128 && inputUID == 2){
@@ -354,6 +446,23 @@ void ZoomScr(int input_type, graph_info* _info, sf::RenderWindow &window, float 
 //boxPt2: the bottom right of bounding box
 bool isOverlap(sf::Vector2f testPos, sf::Vector2f boxPt1, sf::Vector2f boxPt2){
     return (testPos.x > boxPt1.x && testPos.x < boxPt2.x && testPos.y > boxPt1.y && testPos.y < boxPt2.y);
+}
+
+
+
+void clearfile(const string& fileName, const string& baseStr){
+    if (remove(fileName.c_str()) == 0) {
+        cout << "File " << fileName << " successfully deleted.\n";
+    } else {
+        cout << "Error deleting file";
+    }
+
+    ofstream fout("C:/Users/agu4/99_00_final_project-andygu-7685/temp.txt", ios::app);
+    fout << baseStr << "\n";
+    fout.close();
+
+    if (rename("temp.txt", fileName.c_str()) != 0) 
+        cout << "Error: Could not rename the temporary file.\n";
 }
 
 

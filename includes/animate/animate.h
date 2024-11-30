@@ -6,12 +6,16 @@
 
 
 #include <SFML/Graphics.hpp>
+#include <fstream> 
+#include <cstdlib>
+#include <cstdio>
 #include "system.h"
 #include "sidebar.h"
 
 #include "graph_info.h"
 #include "rpn.h"
 #include "shunting_yard.h"
+
 
 
 
@@ -35,6 +39,7 @@ private:
     bool mouseIn;                       //mouse is in the screen
     Sidebar sidebar;                    //rectangular message sidebar
     Sidebar inputbar;
+    Sidebar settingbar;
     string inputStr;
     vector<string> history;
     int inputUID;
@@ -43,5 +48,5 @@ private:
 string mouse_pos_string(sf::RenderWindow& window);
 void ZoomScr(int input_type, graph_info* _info, sf::RenderWindow& window, float mouse_delta = 0);
 bool isOverlap(sf::Vector2f testPos, sf::Vector2f boxPt1, sf::Vector2f boxPt2);
-
+void clearfile(const string& fileName, const string& baseStr);
 #endif // GAME_H

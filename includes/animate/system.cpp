@@ -26,6 +26,7 @@ System::System(graph_info* _infoIn)
     _info = _infoIn;
     _g = graph(_infoIn);
     _g.calc_plot();
+    errorFlag = 0;
 }
 //------------------------------------------------------------------
 //------------------------------------------------------------------
@@ -34,6 +35,7 @@ System::System(graph_info* _infoIn)
 void System::set_info(graph_info* _infoIn){
     _info = _infoIn; 
     _g.set_info(_info);
+    errorFlag = 0;
 }
 
 
@@ -52,6 +54,7 @@ void System::Step(int& command)
         case 8:
         case 9:
                 _g.calc_plot();
+                errorFlag = _g.errorReport();
             break;
         default:
             break;

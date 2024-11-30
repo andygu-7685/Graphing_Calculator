@@ -67,6 +67,8 @@ class Token{
 
     virtual char get_trig()const ;
 
+    virtual int errorReport();
+
     int get_type() const{ return type; }
 
 

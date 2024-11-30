@@ -15,6 +15,7 @@
 #include "variable.h"
 #include "trig.h"
 #include "translate.h"
+#include "exception.h"
 
 
 
@@ -34,6 +35,7 @@ class plot{
 
     sf::Vector2f get_xy(double input_x);
 
+    int errorReport(){ return errorFlag; }
 
 
     private:
@@ -41,6 +43,7 @@ class plot{
     vector<sf::Vector2f> points;
     Queue<Token*> postfix;
     translate T;
+    int errorFlag;
 
 };
 

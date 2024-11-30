@@ -19,19 +19,19 @@ void ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack){
   }
 }
 
-void ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string> fnLst, int outerfn){
+int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string> fnLst, int outerfn){
   string tempStr;
   string testStr;
 
   if(charQueue.empty())
-    return;
+    return 0;
 
   while(!charQueue.empty())
     tempStr += charQueue.pop();
 
 
 
-  if(tempStr.length() >= 4){
+  if(tempStr.length() == 4){
     testStr = tempStr.substr(tempStr.length() - 4, 4);
     if(testStr == "sin(" ||
         testStr == "cos(" ||
@@ -40,31 +40,39 @@ void ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<strin
         testStr == "csc(" ||
         testStr == "cot(" ){
         finalQueue.push(new Trig(tempStr.substr(0,3)));
+        return 0;
     }
   }
 
 
 
-  if(tempStr.length() >= 3){
+  if(tempStr.length() == 3){
     testStr = tempStr.substr(tempStr.length() - 3, 3);
     if((testStr[0] == 'F' || testStr[0] == 'f') && testStr[2] == '('){
         int fnIndex = testStr[1] - '0';
-        assert((fnIndex < 10) && "Invalid function name");
-        assert(fnIndex != outerfn && "the function should not self reference");
-        assert(fnLst[fnIndex] != "NaN" && "the function you referenced do not exist");
-        cout << "the function: " << fnLst[fnIndex] << endl;
-        finalQueue.push(new Function(fnLst[fnIndex], 0, fnLst, fnIndex));    //wait for later function input
+        
+        if(FunctionException(fnLst, fnIndex, outerfn) == 0){
+          //cout << "the function: " << fnLst[fnIndex] << endl;
+          finalQueue.push(new Function(fnLst[fnIndex], 0, fnLst, fnIndex));    //wait for later function input
+          return 0;
+        }
+        else{
+          return FunctionException(fnLst, fnIndex, outerfn);
+        }
     }
   }
 
+  return InputException();
 }
 
+
+//unecessary function
 void clearQueue(Queue<char>& charQueue){
     while(!charQueue.empty())
         charQueue.pop();
 }
 
-Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn){
+Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn, int& errorFlag){
     //cout << "inputStr :" << inputStr;
     bool inFn = false;
     bool strStop = false;
@@ -96,7 +104,10 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn){
           ConvertDigit(digitStack, finalQueue);
           inFn = false;
           charQueue.push('(');
-          ConvertChar(charQueue, finalQueue, fnLst, outerfn);     //detect trig & function
+          //-----------------------------------------------------------
+          errorFlag = ConvertChar(charQueue, finalQueue, fnLst, outerfn);     //detect trig & function
+          if(errorFlag != 0){ return Queue<Token*>(); }
+          //-----------------------------------------------------------
           finalQueue.push(new LeftParen());
           break;
         case ')':
@@ -122,14 +133,18 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn){
           strStop = false;
           break;
       }
-      if(strStop)
-        clearQueue(charQueue);
+      if(strStop){
+        errorFlag = ConvertChar(charQueue, finalQueue, fnLst, outerfn);
+        if(errorFlag != 0){ return Queue<Token*>(); }
+      }
     }
     ConvertDigit(digitStack, finalQueue);
+    errorFlag = ConvertChar(charQueue, finalQueue, fnLst, outerfn);
+    if(errorFlag != 0){ return Queue<Token*>(); }
     return finalQueue;
 }
 
-double rpnAlgorithm( Queue<Token*> input_q, double fnInput ){
+double rpnAlgorithm( Queue<Token*> input_q, int& errorFlag, double fnInput ){
     Stack<Token*> int_stack;
     while(!input_q.empty()){
         Token* walker = input_q.pop();
@@ -152,15 +167,26 @@ double rpnAlgorithm( Queue<Token*> input_q, double fnInput ){
         Token* op1;
         Token* op2;
         if(walker->get_op() == 'T' || walker->get_op() == 'F'){
-            if(int_stack.empty()){ cout << "Error: not enough operand for trig"; return 0; }
+            //-----------------------------------------------------------
+            errorFlag = rpnException(int_stack, 0);
+            if(errorFlag != 0){ return 0; }
             op1 = int_stack.pop();
+            //-----------------------------------------------------------
             result = walker->evaluate(op1->get_int());
+            errorFlag = walker->errorReport();
         }
         else{
-            if(int_stack.empty()){ cout << "Error: not enough operand1"; return 0; }
+            //-----------------------------------------------------------
+            errorFlag = rpnException(int_stack, 1);
+            if(errorFlag != 0){ return 0; }
             op1 = int_stack.pop();
-            if(int_stack.empty()){ cout << "Error: not enough operand2"; return 0; }
+            errorFlag = divideException(op1->get_int(), walker->get_op());
+            if(errorFlag != 0){ return 0; }
+            //-----------------------------------------------------------
+            errorFlag = rpnException(int_stack, 2);
+            if(errorFlag != 0){ return 0; }
             op2 = int_stack.pop();
+            //-----------------------------------------------------------
             result = walker->evaluate(op2->get_int(), op1->get_int());
         }
 
@@ -176,11 +202,12 @@ double rpnAlgorithm( Queue<Token*> input_q, double fnInput ){
     }
 
     Token* answer = int_stack.pop();            //integer
-    if(!int_stack.empty()){ cout << "Error: int_stack should be empty"; return 0; }
+    errorFlag = rpnException(int_stack, 3);
+    if(errorFlag != 0){ return 0; }
     return answer->get_int();
 }
 
-Queue<Token*> syAlgorithm( Queue<Token*> input_q){
+Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
         Queue<Token*> total_queue;
         Stack<Token*> op_stack;
 
@@ -210,17 +237,32 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q){
             }
             else if(walker->get_type() == 5){
                 //delete walker;
-                assert(!op_stack.empty() && "Error missing rightparen");
+                //-----------------------------------------------------------
+                
+                errorFlag = syException(op_stack, false);
+                if(errorFlag != 0){ return Queue<Token*>(); }
+                //-----------------------------------------------------------
+
                 walker = op_stack.pop();
+                
                 while(walker->get_type() != 4){
-                    assert(!op_stack.empty() && "Error missing rightparen");
+
+                    //-----------------------------------------------------------
+                    
+                    errorFlag = syException(op_stack, false);
+                    if(errorFlag != 0){ return Queue<Token*>(); }
+                    //-----------------------------------------------------------
+
                     total_queue.push(walker);
                     walker = op_stack.pop();
+                    
                 }
                 //delete walker;
             }
             else{
-                assert(false && "Error: invalid input");
+                //never gets excuted
+                errorFlag = syException(op_stack, true);
+                if(errorFlag != 0){ return Queue<Token*>(); }
             }
         }
 
@@ -239,11 +281,11 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q){
 
     Function::Function(string fnStr, double varInput, vector<string> fnLst, int outerfn) : Operator("F"){
         Input = varInput;
-        fnQueue = strToQueue(fnStr, fnLst, outerfn);
+        fnQueue = strToQueue(fnStr, fnLst, outerfn, errorFlag);
     }
 
     double Function::evaluate(double uniInput){
-        return rpnAlgorithm(syAlgorithm(fnQueue), uniInput);
+        return rpnAlgorithm(syAlgorithm(fnQueue, errorFlag), errorFlag, uniInput);
     }
 
 

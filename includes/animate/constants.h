@@ -1,6 +1,10 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+
+
+using namespace std;
+
 const double pi = 3.1415926;
 const double FRICTION_COEF = 0.004;
 const double GRAVITY = 0.02;
@@ -19,4 +23,11 @@ const int TYPES = 3;
 const int SB_MOUSE_POSITION = 0;
 const int SB_MOUSE_CLICKED = SB_MOUSE_POSITION + 1;
 const int SB_KEY_PRESSED = SB_MOUSE_CLICKED + 1;
-#endif // CONSTANTS_H
+
+const int IN_EQUATION = 1;
+
+const int ST_SAVE = 0;
+const int ST_CLEAR = 1;
+
+
+#endif //CONSTANTS_H

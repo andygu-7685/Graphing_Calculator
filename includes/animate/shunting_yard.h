@@ -35,16 +35,15 @@ class ShuntingYard{
 
     ShuntingYard( Queue<Token*> input_q );
 
-    Queue<Token*> postfix( Queue<Token*> input_q = Queue<Token*>() );
+    Queue<Token*> postfix( int& errorFlag, Queue<Token*> input_q = Queue<Token*>());
 
     void infix( Queue<Token*> input_q );
 
-    void infix( string inputStr , vector<string> fnLst);
+    void infix( string inputStr , vector<string> fnLst, int& errorFlag);
 
 
     private:
     Queue<Token*> sy_queue;
-
 
 };
 

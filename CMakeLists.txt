@@ -95,6 +95,7 @@ ADD_EXECUTABLE(testB
 )
 
 
+
 # Link "main" executable to sfml-graphics
 TARGET_LINK_LIBRARIES(main sfml-graphics)
 TARGET_COMPILE_FEATURES(main PRIVATE cxx_std_17)

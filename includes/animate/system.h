@@ -14,11 +14,13 @@ public:
     void Step(int& command);
     void Draw(sf::RenderWindow& widnow);
     void set_info(graph_info* _infoIn);
+    int errorReport(){ return errorFlag; }
 
 private:
     graph_info* _info;
     graph _g;
     int totalUID;
+    int errorFlag;
 };
 
 #endif // SYSTEM_H

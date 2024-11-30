@@ -1,5 +1,5 @@
 #include "operator.h"
-
+#include <cassert>
 
 
 
@@ -67,5 +67,10 @@
 
     double Operator::evaluate(){
         cout << "child virtual evaluate excuted";
+        return 0;
+    }
+
+    int Operator::errorReport(){
+        cout << "child virtual errorReport excuted";
         return 0;
     }
