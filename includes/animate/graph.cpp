@@ -31,6 +31,20 @@ void graph::calc_plot(){
 
 
 void graph::draw(sf::RenderWindow &window){
+    sf::Vertex xaxis[] = {
+    sf::Vertex(sf::Vector2f(0, _info->origin.y), sf::Color::White),
+    sf::Vertex(sf::Vector2f(SCREEN_WIDTH - SIDEB_W, _info->origin.y), sf::Color::White)
+    };
+
+    sf::Vertex yaxis[] = {
+    sf::Vertex(sf::Vector2f(_info->origin.x, 0), sf::Color::White),
+    sf::Vertex(sf::Vector2f(_info->origin.x, SCREEN_HEIGHT), sf::Color::White)
+    };
+    window.draw(xaxis, 2, sf::Lines);
+    window.draw(yaxis, 2, sf::Lines);
+
+
+
     pt.setFillColor(sf::Color(254, 254, 0));
     for(int i = 0; i < points.size() - 1; i++){
         sf::Vertex line[] = {

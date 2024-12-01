@@ -1,8 +1,10 @@
 #include "sidebar.h"
 #include "constants.h"
-Sidebar::Sidebar()
-{
-}
+
+
+
+
+Sidebar::Sidebar(){}
 
 Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn) 
     : _left(left), _top(top), _width(width), _height(height), UID(UIDIn)
@@ -131,6 +133,16 @@ int Sidebar::overlapText(sf::Vector2f testPos){
     }
     return -1;
 }
+
+
+
+bool Sidebar::overlap(sf::Vector2f testPos){
+    sf::Vector2f boxPt1 = getPt(1);
+    sf::Vector2f boxPt2 = getPt(3);
+    return (testPos.x > boxPt1.x && testPos.x < boxPt2.x && testPos.y > boxPt1.y && testPos.y < boxPt2.y);
+}
+
+
 
 
 

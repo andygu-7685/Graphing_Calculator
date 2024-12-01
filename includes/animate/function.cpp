@@ -1,5 +1,6 @@
 #include "function.h"
 
+
 void ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack){
   int currentDigit = 0;
   double tempNum = 0;
@@ -19,6 +20,9 @@ void ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack){
   }
 }
 
+
+
+//return an errorFlag
 int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string> fnLst, int outerfn){
   string tempStr;
   string testStr;
@@ -28,7 +32,6 @@ int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string
 
   while(!charQueue.empty())
     tempStr += charQueue.pop();
-
 
 
   if(tempStr.length() == 4){
@@ -42,6 +45,14 @@ int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string
         finalQueue.push(new Trig(tempStr.substr(0,3)));
         return 0;
     }
+    else if(testStr == "Max(" || testStr == "max("){
+        finalQueue.push(new compare(true));
+        return 0;
+    }
+    else if(testStr == "Min(" || testStr == "min("){
+        finalQueue.push(new compare(false));
+        return 0;
+    }
   }
 
 
@@ -50,17 +61,16 @@ int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string
     testStr = tempStr.substr(tempStr.length() - 3, 3);
     if((testStr[0] == 'F' || testStr[0] == 'f') && testStr[2] == '('){
         int fnIndex = testStr[1] - '0';
-        
-        if(FunctionException(fnLst, fnIndex, outerfn) == 0){
-          //cout << "the function: " << fnLst[fnIndex] << endl;
+        int errorFlag = FunctionException(fnLst, fnIndex, outerfn);
+
+        if(errorFlag == 0)
           finalQueue.push(new Function(fnLst[fnIndex], 0, fnLst, fnIndex));    //wait for later function input
-          return 0;
-        }
-        else{
-          return FunctionException(fnLst, fnIndex, outerfn);
-        }
+        return errorFlag;
     }
   }
+
+  if(tempStr.length() == 1 && tempStr == "(")
+      return 0;
 
   return InputException();
 }
@@ -73,8 +83,8 @@ void clearQueue(Queue<char>& charQueue){
 }
 
 Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn, int& errorFlag){
-    //cout << "inputStr :" << inputStr;
     bool inFn = false;
+    bool inCmp = false;
     bool strStop = false;
     string opStr;
     Stack<char> digitStack;
@@ -118,7 +128,19 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn, int
         case 'X':
         case 'x':
           //cout << "var\n";
-          finalQueue.push(new Variable());
+          if(inCmp){
+            charQueue.push(inputStr[i]);
+            strStop = false;
+          }
+          else{
+            finalQueue.push(new Variable());
+          }
+          break;
+        case ',':
+          if(inCmp){
+              ConvertDigit(digitStack, finalQueue);
+              inCmp = false;
+          }
           break;
         default:
           if((inputStr[i] - '0' < 10 && inputStr[i] - '0' >= 0 && !inFn) || inputStr[i] == '.'){
@@ -129,6 +151,8 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn, int
           //cout << "alpha\n";
           if(inputStr[i] == 'F' || inputStr[i] == 'f')
             inFn = true;
+          if(inputStr[i] == 'M' || inputStr[i] == 'm')
+            inCmp = true;
           charQueue.push(inputStr[i]);
           strStop = false;
           break;
@@ -168,7 +192,7 @@ double rpnAlgorithm( Queue<Token*> input_q, int& errorFlag, double fnInput ){
         Token* op2;
         if(walker->get_op() == 'T' || walker->get_op() == 'F'){
             //-----------------------------------------------------------
-            errorFlag = rpnException(int_stack, 0);
+            errorFlag = rpnException(int_stack);
             if(errorFlag != 0){ return 0; }
             op1 = int_stack.pop();
             //-----------------------------------------------------------
@@ -177,13 +201,13 @@ double rpnAlgorithm( Queue<Token*> input_q, int& errorFlag, double fnInput ){
         }
         else{
             //-----------------------------------------------------------
-            errorFlag = rpnException(int_stack, 1);
+            errorFlag = rpnException(int_stack);
             if(errorFlag != 0){ return 0; }
             op1 = int_stack.pop();
             errorFlag = divideException(op1->get_int(), walker->get_op());
             if(errorFlag != 0){ return 0; }
             //-----------------------------------------------------------
-            errorFlag = rpnException(int_stack, 2);
+            errorFlag = rpnException(int_stack);
             if(errorFlag != 0){ return 0; }
             op2 = int_stack.pop();
             //-----------------------------------------------------------
@@ -196,20 +220,22 @@ double rpnAlgorithm( Queue<Token*> input_q, int& errorFlag, double fnInput ){
     
 
     
-    if(int_stack.empty()){
-        cout << "int_stack is empty before pop";
-        return 0;
-    }
+    errorFlag = rpnException(int_stack);
+    if(errorFlag != 0){ return 0; }
 
     Token* answer = int_stack.pop();            //integer
-    errorFlag = rpnException(int_stack, 3);
+
+    errorFlag = rpnException(int_stack, true);
     if(errorFlag != 0){ return 0; }
+
     return answer->get_int();
 }
 
 Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
         Queue<Token*> total_queue;
         Stack<Token*> op_stack;
+        int parenCtr = 0;
+        bool afterParen = false;      //test if the operand is right after a parenthesis
 
         while(!input_q.empty()){
             Token* walker = input_q.pop();
@@ -218,28 +244,42 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
                 
             if(walker->get_type() == 1 || walker->get_type() == 3 ){
                 total_queue.push(walker);
+                afterParen = false;
             }
             else if(walker->get_type() == 2){
                 //gotta respect or no
+
                 if(!op_stack.empty()){
                     prevOp = op_stack.pop();
+
+                    //if negate operator
+                    if(walker->get_op() == '-' && afterParen)
+                        total_queue.push(new Integer(0.0));
+
                     while((walker->get_prec() <= prevOp->get_prec()) && (!op_stack.empty())){
                         total_queue.push(prevOp);
                         prevOp = op_stack.pop();
                     }
                     //terminal case,
                     walker->get_prec() <= prevOp->get_prec() ? total_queue.push(prevOp) : op_stack.push(prevOp);
+                    op_stack.push(walker);
                 }
-                op_stack.push(walker);
+                else{
+                  if(walker->get_op() == '-' && total_queue.empty())
+                    total_queue.push(new Integer(0.0));
+                  op_stack.push(walker);
+                }
+                afterParen = false;
             }
             else if(walker->get_type() == 4){
                 op_stack.push(walker);
+                parenCtr++;
+                afterParen = true;
             }
             else if(walker->get_type() == 5){
                 //delete walker;
                 //-----------------------------------------------------------
-                
-                errorFlag = syException(op_stack, false);
+                errorFlag = syException(op_stack);
                 if(errorFlag != 0){ return Queue<Token*>(); }
                 //-----------------------------------------------------------
 
@@ -248,8 +288,7 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
                 while(walker->get_type() != 4){
 
                     //-----------------------------------------------------------
-                    
-                    errorFlag = syException(op_stack, false);
+                    errorFlag = syException(op_stack);
                     if(errorFlag != 0){ return Queue<Token*>(); }
                     //-----------------------------------------------------------
 
@@ -257,14 +296,17 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
                     walker = op_stack.pop();
                     
                 }
+                parenCtr--;
+                afterParen = false;
                 //delete walker;
             }
             else{
                 //never gets excuted
-                errorFlag = syException(op_stack, true);
-                if(errorFlag != 0){ return Queue<Token*>(); }
             }
         }
+
+        errorFlag = parenException(parenCtr);
+        if(errorFlag != 0){ return Queue<Token*>(); }
 
         while(!op_stack.empty())
             total_queue.push(op_stack.pop());

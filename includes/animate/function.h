@@ -16,6 +16,7 @@
 #include "MyQueue.h"
 #include "MyStack.h"
 #include "exception.h"
+#include "compare.h"
 
 
 

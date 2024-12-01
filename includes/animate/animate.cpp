@@ -6,6 +6,7 @@ using namespace std;
 #include "system.h"
 
 
+
 const vector<string> errorMsg = {   "No Error",
                                     "Error: Invalid function name.",
                                     "Error: the function should not self reference.",
@@ -15,20 +16,20 @@ const vector<string> errorMsg = {   "No Error",
                                     "Error: missing operand.",
                                     "Error: invalid input.",
                                     "Error: unknown Input.",
-                                    "Error: divide by zero." };
+                                    "Error: divide by zero.",
+                                    "Error: Missing rightparen" };
 
 
 
-animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT - 105, 1), inputbar(0, 0, SIDE_BAR, 100, 2), 
-                     settingbar(WORK_PANEL, 700, SIDE_BAR, 100, 3)
+
+
+animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
+                     inputbar(INB_X, INB_Y, INB_W, INB_H, 2), 
+                     settingbar(SETB_X, SETB_Y, SETB_W, SETB_H, 3)
 {
-
-
-
-
-
     cout << "animate CTOR: TOP" << endl;
     window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "SFML window!");
+    window.setFramerateLimit(60);
     // VideoMode class has functions to detect screen size etc.
     // RenderWindow constructor has a third argumnet to set style
     // of the window: resize, fullscreen etc.
@@ -37,56 +38,48 @@ animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT - 105, 1), i
     //   at that point, the constructor of the System class will take a vector
     //   of objects created by the animate object.
     //   animate will
-    inputStr = "";
 
 
 
 
 
+    //default text
     inputbar[0] = "Input equation: ";
     settingbar[ST_SAVE] = "SAVE HISTORY";
     settingbar[ST_CLEAR] = "CLEAR HISTORY";
-    history = vector<string>();
-    string metaData;
-    string equationData;
-    ifstream fin("historyData.txt");
-
-    if(fin.fail()){
-        cout << "could not open file";
-        exit(3);
-    }
-
-    getline(fin, metaData);
-    cout << "equationData:" << endl;
-    if(metaData == "Base:FileState:Data:"){
-        while(getline(fin, equationData)){
-            history.push_back(equationData);
-            cout << equationData << endl;
-        }        
-    }
-    fin.close();
 
 
 
 
 
-
-
+    //initialize private variable
+    inputStr = "";
+    isDragging = false;
+    errorFlag = 0;
     _info = new graph_info( inputStr, 
-                            sf::Vector2f(SCREEN_HEIGHT, SCREEN_HEIGHT), 
-                            sf::Vector2f(SCREEN_HEIGHT / 2.0 , SCREEN_HEIGHT / 2.0),
+                            sf::Vector2f(SCREEN_WIDTH - SIDEB_W, SCREEN_HEIGHT), 
+                            sf::Vector2f((SCREEN_WIDTH - SIDEB_W) / 2.0 , SCREEN_HEIGHT / 2.0),
                             sf::Vector2f(-20, 20),
                             sf::Vector2f(-20, 20), 100);
+    _info->square_scale();
     system = System(_info);
-    window.setFramerateLimit(60);
-
     mouseIn = true;
-
     mousePoint = sf::CircleShape();
     mousePoint.setRadius(5.0);
     mousePoint.setFillColor(sf::Color::Red);
 
-    cout << "Geme CTOR. preparing to load the font." << endl;
+
+
+
+
+    //Load History
+    history = LoadHistory(errorFlag);
+
+    
+
+
+
+    cout << "Game CTOR. preparing to load the font." << endl;
     //--- FONT ----------
     // font file must be in the "working directory:
     //      debug folder
@@ -111,18 +104,20 @@ animate::animate() : sidebar(WORK_PANEL, 0, SIDE_BAR, SCREEN_HEIGHT - 105, 1), i
     cout << "animate instantiated successfully." << endl;
 }
 
+
+
+
+
 void animate::Draw()
 {
     // Look at the data and based on the data, draw shapes on window object.
     system.Draw(window);
-    if (mouseIn)
-    {
-        window.draw(mousePoint);
-    }
-
     sidebar.draw(window);
     inputbar.draw(window);
     settingbar.draw(window);
+
+    if (mouseIn)
+        window.draw(mousePoint);
 
     
     //- - - - - - - - - - - - - - - - - - -
@@ -136,27 +131,40 @@ void animate::Draw()
     //. . . . . . . . . . . . . . . . . . .
 }
 
+
+
+
+
 void animate::update()
 {
     // cause changes to the data for the next frame
     system.Step(command);
-
     command = 0;
+
     if (mouseIn)
     {
         // mousePoint red dot:
-        mousePoint.setPosition(sf::Mouse::getPosition(window).x - 5,
-                               sf::Mouse::getPosition(window).y - 5);
+        mousePoint.setPosition(sf::Mouse::getPosition(window).x - 5, sf::Mouse::getPosition(window).y - 5);
 
         // mouse location text for sidebar:
         sidebar[SB_MOUSE_POSITION] = mouse_pos_string(window);
 
-        int lineNum = 3;
+        // update the sidebar with history
+        int lineNum = SB_HISTORY;
         vector<string> historyDup = history;
         while(lineNum < 25 && !historyDup.empty()){
             sidebar[lineNum] = historyDup.back();
             historyDup.pop_back();
             lineNum++;
+        }
+
+
+        //update error label
+        if(system.errorReport() != 0){
+            inputbar[0] = errorMsg[system.errorReport()];
+        }
+        else{
+            inputbar[0] = "Input equation: "; 
         }
     }
 }
@@ -170,13 +178,8 @@ void animate::render()
 
 void animate::processEvents()
 {
-
-
-
-
-
     sf::Event event;
-    float mouseX, mouseY;
+    
 
     while (window.pollEvent(event)) // or waitEvent
     {
@@ -194,85 +197,74 @@ void animate::processEvents()
             {
             case sf::Keyboard::Left:
                 sidebar[SB_KEY_PRESSED] = "LEFT ARROW";
-                command = 3;
-
-                _info->origin.x -= PANINC * _info->scale.x;
-                _info->domain.x += PANINC;
-                _info->domain.y += PANINC;
+                PanScreen(_info, 1);
                 system.set_info(_info);
-                system.Step(command);
-
+                command = 3;
                 break;
+
+
             case sf::Keyboard::Right:
                 sidebar[SB_KEY_PRESSED] = "RIGHT ARROW";
-                command = 4;
-
-                _info->origin.x += PANINC * _info->scale.x;
-                _info->domain.x -= PANINC;
-                _info->domain.y -= PANINC;
+                PanScreen(_info, 3);
                 system.set_info(_info);
-                system.Step(command);
-
+                command = 4;
                 break;
+
+
             case sf::Keyboard::Up:
                 sidebar[SB_KEY_PRESSED] = "UP ARROW";
-                command = 5;
-
-                _info->origin.y -= PANINC * _info->scale.y;
-                _info->range.x += PANINC;
-                _info->range.y += PANINC;
+                PanScreen(_info, 7);
                 system.set_info(_info);
-                system.Step(command);
-
+                command = 5;
                 break;
+
+
             case sf::Keyboard::Down:
                 sidebar[SB_KEY_PRESSED] = "DOWN ARROW";
-                command = 6;
-
-                _info->origin.y += PANINC * _info->scale.y;
-                _info->range.x -= PANINC;
-                _info->range.y -= PANINC;
+                PanScreen(_info, 5);
                 system.set_info(_info);
-                system.Step(command);
-
+                command = 6;
                 break;
+
+
             case sf::Keyboard::I:
                 sidebar[SB_KEY_PRESSED] = "ZOOM IN";
-                command = 7;
-                ZoomScr(1, _info, window, 0);
+                ZoomScr(1, _info, mousePos);
                 system.set_info(_info);
-                system.Step(command);
+                command = 7;
                 break;
+
+
             case sf::Keyboard::O:
                 sidebar[SB_KEY_PRESSED] = "ZOOM OUT";
-                command = 8;
-                ZoomScr(2, _info, window, 0);
+                ZoomScr(2, _info, mousePos);
                 system.set_info(_info);
-                system.Step(command);
+                command = 8;
                 break;
+
+
             case sf::Keyboard::Enter:
                 if(inputUID == 2){
-                    command = 2;
                     _info->equation = inputStr;
                     system.set_info(_info);
+                    command = 2;
                     system.Step(command);
-
-                    if(system.errorReport() != 0){
-                        inputbar[0] = errorMsg[system.errorReport()];
-                    }
-                    else{
-                        inputbar[0] = "Input equation: "; 
+                    if(system.errorReport() == 0)
                         history.push_back(inputStr);
-                    }
                 }
                 break;
+
+
             case sf::Keyboard::Escape:
                 sidebar[SB_KEY_PRESSED] = "ESC: EXIT";
                 window.close();
                 break;
-            }
 
+
+            }
             break;
+
+
         case sf::Event::MouseEntered:
             mouseIn = true;
             break;
@@ -282,73 +274,86 @@ void animate::processEvents()
             break;
 
         case sf::Event::MouseMoved:
-            mouseX = event.mouseMove.x;
-            mouseY = event.mouseMove.y;
-            // Do something with it if you need to...
+            mousePos.x = event.mouseMove.x;
+            mousePos.y = event.mouseMove.y;
+            if(isDragging){
+                sf::Vector2f diff(mousePos.x - dragStart.x, mousePos.y - dragStart.y);
+                PanScreen(_info, diff);
+                dragStart = mousePos;
+                system.set_info(_info);
+                command = 8;
+            }
             break;
+
         case sf::Event::MouseButtonReleased:
             if (event.mouseButton.button == sf::Mouse::Right){
                 sidebar[SB_MOUSE_CLICKED] = "RIGHT CLICK " + mouse_pos_string(window);
             }
             else{
+                isDragging = false;
+                int rowNum;
                 sidebar[SB_MOUSE_CLICKED] = "LEFT CLICK " + mouse_pos_string(window);
-                if(isOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y), 
-                             inputbar.getPt(1), inputbar.getPt(3))){
-                    inputUID = inputbar.getUID();
-                }
-                else if(isOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y), 
-                             sidebar.getPt(1), sidebar.getPt(3))){
-                    cout << "clicked sidebar:";
-                    inputUID = sidebar.getUID();
-                    int rowNum = sidebar.overlapText(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
-                    if(rowNum >= 3 && sidebar[rowNum] != ""){
-                        inputStr = sidebar[rowNum];
-                        command = 2;
-                        _info->equation = inputStr;
-                        system.set_info(_info);
-                        system.Step(command);
-                    }
-                }
-                else if(isOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y), 
-                             settingbar.getPt(1), settingbar.getPt(3))){
-                    cout << "clicked setting bar:";
-                    inputUID = settingbar.getUID();
-                    int rowNum = settingbar.overlapText(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
-                    if(rowNum == ST_SAVE){
-                        cout << "save file\n";
-                        clearfile("historyData.txt", "Base:FileState:Data:");
-                        ofstream historyIn("historyData.txt", ios::app);
-                        while(!history.empty()){
-                            historyIn << history.begin()->c_str() << "\n";
-                            history.erase(history.begin());
+                inputUID = scanOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
+                cout << mousePos.x << ", " << mousePos.y << endl;
+                switch(inputUID){
+                    case 1:                 //sidebar
+                        cout << "clicked sidebar:";
+                        rowNum = sidebar.overlapText(mousePos);
+                        if(rowNum >= 3 && sidebar[rowNum] != ""){
+                            inputStr = sidebar[rowNum];
+                            _info->equation = inputStr;
+                            system.set_info(_info);
+                            command = 2;
                         }
-                        historyIn.close();
-                    }
-                    else if(rowNum == ST_CLEAR){
-                        cout << "clear file\n";
-                        clearfile("historyData.txt", "Base:FileState:Empty:");
-                    }
+                        break;
 
+                    case 2:                 //inputbar
+                        cout << "clicked inputbar:";
+                        break;
+
+                    case 3:                 //settingbar
+                        cout << "clicked setting bar:";
+                        rowNum = settingbar.overlapText(mousePos);
+                        if(rowNum == ST_SAVE){
+                            clearfile("historyData.txt", "Base:FileState:Data:");
+                            ofstream historyIn("historyData.txt", ios::app);
+                            while(!history.empty()){
+                                historyIn << history.begin()->c_str() << "\n";
+                                history.erase(history.begin());
+                            }
+                            historyIn.close();
+                        }
+                        else if(rowNum == ST_CLEAR){
+                            clearfile("historyData.txt", "Base:FileState:Empty:");
+                        }
+                        break;
+
+                    default:
+
+                        break;
                 }
             }
-
             break;
+
+
         case sf::Event::MouseWheelScrolled:
             if(event.mouseWheelScroll.delta != 0 && mouseIn){
-                ZoomScr(3, _info, window, event.mouseWheelScroll.delta);
-                sidebar[SB_KEY_PRESSED] = "SCROLLING";
-                command = 9;
+                ZoomScr(3, _info, mousePos, event.mouseWheelScroll.delta);
+                sidebar[SB_KEY_PRESSED] = "( " + to_string(_info->domain.x) + ", " + to_string(_info->domain.y) + " )";
                 system.set_info(_info);
-                system.Step(command);
+                command = 9;
             }
             break;
+
+
         case sf::Event::TextEntered:
             if(event.text.unicode == 8 && inputUID == 2){
+                //if backspace is pressed
                 if(!inputStr.empty()){
                     inputStr.pop_back();
                     inputbar[1] = inputStr;
                 }
-            }
+            }                       
             else if (event.text.unicode == 13 && inputUID == 2){
                 //dont push anything when Enter is pressed
                 inputbar[1] = inputStr;
@@ -358,6 +363,12 @@ void animate::processEvents()
                 inputbar[1] = inputStr;
             }
             break;
+
+        case sf::Event::MouseButtonPressed:
+            if (event.mouseButton.button == sf::Mouse::Left) {
+                isDragging = true;
+                dragStart = mousePos;
+            }
         default:
             break;
         }
@@ -376,6 +387,22 @@ void animate::run()
          << "-------ANIMATE MAIN LOOP EXITING ------------" << endl;
 }
 
+
+
+int animate::scanOverlap(sf::Vector2f testPos){
+    if(sidebar.overlap(testPos))
+        return sidebar.getUID();
+    if(inputbar.overlap(testPos))
+        return inputbar.getUID();
+    if(settingbar.overlap(testPos))
+        return settingbar.getUID();
+    return -1;
+}
+
+
+
+
+
 string mouse_pos_string(sf::RenderWindow &window)
 {
     return "(" +
@@ -386,44 +413,67 @@ string mouse_pos_string(sf::RenderWindow &window)
 }
 
 
-
-//1 = "i"
-//2 = "o"
+//input_type:          
+//1 = "i"               
+//2 = "o"               
 //3 = mouse scroll
-void ZoomScr(int input_type, graph_info* _info, sf::RenderWindow &window, float mouse_delta){
-    //screen origin in plotting coordinate
-    double xratio1(1), xratio2(1);
+//   
+//axis:
+//0 = default zoom
+//1 = only zoom x
+//2 = only zoom y
+void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mouse_delta, int axis){
+    //the zoom rate depend on the ratio of the screen
+    double xratio1(_info->dimensions.x / _info->dimensions.y), xratio2(_info->dimensions.x / _info->dimensions.y);
     double yratio1(1), yratio2(1);
-    double mousex = sf::Mouse::getPosition(window).x;
-    double mousey = sf::Mouse::getPosition(window).y;
-    
-    int Zoom = 3;               // -1 = zoom out, 1 = zoom in, 3 = no zoom
-    double ZoomX(_info->dimensions.x/2), ZoomY(_info->dimensions.y/2);
-    if(input_type == 3 && mousex < _info->dimensions.x 
-                       && mousey < _info->dimensions.y
-                       && mousex > 0
-                       && mousey > 0){
-        ZoomX = mousex;
-        ZoomY = mousey;
-        xratio1 = mousex / _info->dimensions.x;
-        xratio2 = (_info->dimensions.x - mousex) / _info->dimensions.x;
-        yratio1 = mousey / _info->dimensions.y;
-        yratio2 = (_info->dimensions.y - mousey) / _info->dimensions.y;
+    if(axis == 1){                      //only zoom x
+        yratio1 = 0;
+        yratio2 = 0;
+    }
+    else if(axis == 2){                 //only zoom y
+        xratio1 = 0;
+        xratio2 = 0;
     }
 
-    sf::Vector2f ScrO((ZoomX - _info->origin.x) / _info->scale.x , 
-                        (ZoomY - _info->origin.y) / _info->scale.y);
+    
+    // -1 = zoom out, 1 = zoom in, 3 = no zoom
+    int Zoom = 3;
+    //Center of the zoom
+    double ZoomX(_info->dimensions.x/2), ZoomY(_info->dimensions.y/2);
+    if(input_type == 3 && mousePos.x < _info->dimensions.x 
+                       && mousePos.y < _info->dimensions.y
+                       && mousePos.x > 0
+                       && mousePos.y > 0){
+        ZoomX = mousePos.x;
+        ZoomY = mousePos.y;
+        xratio1 *= mousePos.x / _info->dimensions.x;
+        xratio2 *= (_info->dimensions.x - mousePos.x) / _info->dimensions.x;
+        yratio1 *= mousePos.y / _info->dimensions.y;
+        yratio2 *= (_info->dimensions.y - mousePos.y) / _info->dimensions.y;
+    }
 
-    if(input_type == 1 && _info->domain.y - _info->domain.x >= 3 && _info->range.y - _info->range.x >= 3)
+
+    //coordinate of center of zoom relative to the origin in plotting coordinate
+    sf::Vector2f ScrO((ZoomX - _info->origin.x) / _info->scale.x,
+                      (ZoomY - _info->origin.y) / _info->scale.y);
+
+    //if "i" or "o" zoom
+    if(input_type == 1 && (_info->domain.y - _info->domain.x) >= MIN_RANGE && 
+                          (_info->range.y - _info->range.x) >= MIN_RANGE)
         Zoom = 1;
     if(input_type == 2)
         Zoom = -1;
     
-    if( input_type == 3 && mouse_delta > 0 && _info->domain.y - _info->domain.x >= 3 && _info->range.y - _info->range.x >= 3)
+    //if mouse zoom
+    if(input_type == 3 && mouse_delta > 0 &&
+       _info->domain.y - _info->domain.x >= MIN_RANGE &&
+       _info->range.y - _info->range.x >= MIN_RANGE)
         Zoom = 1;
     if(input_type == 3 && mouse_delta < 0)
         Zoom = -1;
 
+
+    //if there's a zoom
     if(Zoom == 1 || Zoom == -1){
         _info->domain.x += xratio1 * ZOOMRATE * Zoom;
         _info->domain.y -= xratio2 * ZOOMRATE * Zoom;
@@ -434,6 +484,7 @@ void ZoomScr(int input_type, graph_info* _info, sf::RenderWindow &window, float 
 
 
     _info->reset_scale();
+    //calculate position of the origin after zoom
     _info->origin = sf::Vector2f (ZoomX - (ScrO.x * _info->scale.x), 
                                   ZoomY - (ScrO.y * _info->scale.y));
 }
@@ -447,6 +498,11 @@ void ZoomScr(int input_type, graph_info* _info, sf::RenderWindow &window, float 
 bool isOverlap(sf::Vector2f testPos, sf::Vector2f boxPt1, sf::Vector2f boxPt2){
     return (testPos.x > boxPt1.x && testPos.x < boxPt2.x && testPos.y > boxPt1.y && testPos.y < boxPt2.y);
 }
+
+
+
+
+
 
 
 
@@ -466,5 +522,61 @@ void clearfile(const string& fileName, const string& baseStr){
 }
 
 
+
+
+
+
+
+vector<string> LoadHistory(int& errorFlag){
+    vector<string> history;
+    string metaData, equationData;
+    ifstream fin("historyData.txt");
+
+    if(fin.fail()){
+        cout << "could not open file";
+        errorFlag = 10;
+    }
+
+    getline(fin, metaData);
+    if(metaData == "Base:FileState:Data:"){
+        while(getline(fin, equationData))
+            history.push_back(equationData);
+    }
+
+    fin.close();
+    return history;
+}
+
+
+
+
+
+//1357
+//1 = left
+//3 = right
+//5 = down
+//7 = up
+void PanScreen(graph_info* _info, int dir){
+    if(dir > 4){
+        _info->origin.y -= (dir-6) * PANINC * _info->scale.y;
+        _info->range.x += (dir-6) * PANINC;
+        _info->range.y += (dir-6) * PANINC;
+    }
+    else{
+        _info->origin.x -= (dir-2) * PANINC * _info->scale.x;
+        _info->domain.x += (dir-2) * PANINC;
+        _info->domain.y += (dir-2) * PANINC;
+    }
+}
+
+
+void PanScreen(graph_info* _info, sf::Vector2f diff){
+    _info->origin.x += diff.x;
+    _info->origin.y += diff.y;
+    _info->domain.x -= diff.x / _info->scale.x;
+    _info->domain.y -= diff.x / _info->scale.x;
+    _info->range.x -= diff.y / _info->scale.y;
+    _info->range.y -= diff.y / _info->scale.y;
+}
 
 

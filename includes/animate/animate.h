@@ -28,9 +28,12 @@ public:
     void update();
     void render();
     void Draw();
+    int scanOverlap(sf::Vector2f testPos);
+
 private:
     sf::RenderWindow window;
     sf::CircleShape mousePoint;         //The little red dot
+    sf::Vector2f mousePos;
     System system;                      //container for all the animated objects
     graph_info* _info;                   //contain info about current graph
     int command;                        //command to send to system
@@ -43,10 +46,16 @@ private:
     string inputStr;
     vector<string> history;
     int inputUID;
+    int errorFlag;
+    bool isDragging;
+    sf::Vector2f dragStart;
 };
 
 string mouse_pos_string(sf::RenderWindow& window);
-void ZoomScr(int input_type, graph_info* _info, sf::RenderWindow& window, float mouse_delta = 0);
+void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mouse_delta = 0, int axis = 0);
 bool isOverlap(sf::Vector2f testPos, sf::Vector2f boxPt1, sf::Vector2f boxPt2);
 void clearfile(const string& fileName, const string& baseStr);
+vector<string> LoadHistory(int& errorFlag);
+void PanScreen(graph_info* _info, int dir);
+void PanScreen(graph_info* _info, sf::Vector2f diff);
 #endif // GAME_H

@@ -13,6 +13,7 @@ public:
     Sidebar();
     Sidebar(float left, float top, float width, float height, int UIDIn);
     int overlapText(sf::Vector2f testPos);
+    bool overlap(sf::Vector2f testPos);
     sf::Vector2f getPt(int corner);
     void draw(sf::RenderWindow& window);
     string& operator [](int index);

@@ -22,6 +22,7 @@ struct graph_info {
     sf::Vector2f scale;
     sf::Vector2f domain;
     sf::Vector2f range;
+    bool polar = false;
     int totalpt;
 
     graph_info(std::string equ, sf::Vector2f dim, sf::Vector2f org, sf::Vector2f rang, sf::Vector2f dom, int tot) 
@@ -33,6 +34,20 @@ struct graph_info {
     void reset_scale(){
         scale.x = dimensions.x / (domain.y - domain.x);
         scale.y = dimensions.y / (range.y - range.x);
+    }
+
+    void square_scale(){
+        scale.y = dimensions.y / (range.y - range.x);
+        scale.x = scale.y;
+        float absDomain = dimensions.x / scale.x;
+        domain = sf::Vector2f(-absDomain/2.0, absDomain/2.0);
+        origin = sf::Vector2f(dimensions.x / 2.0, dimensions.y/ 2.0);
+    }
+
+    void square_domain(){
+        domain = range;
+        origin = sf::Vector2f(dimensions.x / 2.0, dimensions.y/ 2.0);
+        reset_scale();
     }
 
 };

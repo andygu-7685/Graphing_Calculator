@@ -4,52 +4,18 @@
 
 
 
-
-Exception::Exception() : msg(""), errorCode(0)
-{}
-Exception::Exception(string str, int num) : msg(str), errorCode(num)
-{}
-
-
-
-
-string Exception::Report(int eCode)
-{
-    return msg;
-}
-
-int Exception::ReportCode(){
-    return errorCode;
-}
-
-
-
-Exception& Exception::operator =(const Exception& right){
-    msg = right.msg;
-    errorCode = right.errorCode;
-    return *this;
-}
-
-
-
 int FunctionException(vector<string> fnLst, int fnIndex, int outerfn){
     try{
-        if(fnIndex >= 10 || fnIndex < 0){
-            throw Exception("Error: Invalid function name.", 1);
-        }
-
-        if(fnIndex == outerfn){
-            throw Exception("Error: the function should not self reference.", 2);
-        }
-
-        if(fnLst[fnIndex] == "NaN"){
-            throw Exception("Error: the function you referenced do not exist.", 3);
-        }
-
-        return Exception().ReportCode();
+        if(fnIndex >= 10 || fnIndex < 0)
+            throw 1;             //"Error: Invalid function name."
+        if(fnIndex == outerfn)
+            throw 2;             //"Error: the function should not self reference."
+        if(fnLst[fnIndex] == "NaN")
+            throw 3;             //"Error: the function you referenced do not exist."
+        return 0;
     }
-    catch(Exception e){
-        return e.ReportCode();
+    catch(int e){
+        return e;
     }
 }
 
@@ -66,19 +32,14 @@ int FunctionException(vector<string> fnLst, int fnIndex, int outerfn){
 
 
 
-int syException(Stack<Token*>& op_stack, bool unkInput){
+int syException(Stack<Token*>& op_stack){
     try{
-        if(op_stack.empty() && unkInput == false){
-            throw Exception("Error: missing leftparen.", 4);
-        }
-        if(unkInput){
-            //never gets excuted
-            throw Exception("Error: unknown Input.", 5);
-        }
-        return Exception().ReportCode();
+        if(op_stack.empty())
+            throw 4;            //"Error: missing leftparen.";
+        return 0;
     }
-    catch(Exception e){
-        return e.ReportCode();
+    catch(int e){
+        return e;
     }
 }
 
@@ -99,6 +60,11 @@ int divideException(double inputVal, char _op){
 }
 
 
+int parenException(int ctr){
+    if(ctr != 0)
+        return 10;
+    return 0;
+}
 
 
 
@@ -107,28 +73,16 @@ int divideException(double inputVal, char _op){
 
 
 
-
-
-
-
-
-
-
-
-
-
-int rpnException(Stack<Token *> int_stack, int condition){
+int rpnException(Stack<Token*> int_stack, bool invert){
     try{
-        if(!int_stack.empty() && condition == 3)
-            throw Exception("Error: int_stack should be empty.", 7);
-
-        if(int_stack.empty() && (condition == 0 || condition == 1 || condition == 2))
-            throw Exception("Error: missing operand.", 6);
-        
-        return Exception().ReportCode();
+        if(!int_stack.empty() && invert == true)
+            throw 7;                //"Error: int_stack should be empty."
+        if(int_stack.empty() && invert == false)
+            throw 6;                 //"Error: missing operand."
+        return 0;
     }
-    catch(Exception e){
-        return e.ReportCode();
+    catch(int e){
+        return e;
     }
 }
 

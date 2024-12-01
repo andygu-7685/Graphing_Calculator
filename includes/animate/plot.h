@@ -35,6 +35,8 @@ class plot{
 
     sf::Vector2f get_xy(double input_x);
 
+    sf::Vector2f get_polar(double input_x);
+
     int errorReport(){ return errorFlag; }
 
 

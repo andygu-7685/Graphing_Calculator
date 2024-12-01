@@ -1,5 +1,5 @@
-#ifndef TRIG_H
-#define TRIG_H
+#ifndef COMPARE_H
+#define COMPARE_H
 
 
 
@@ -17,14 +17,13 @@ class compare : public Operator{
 
     compare();
 
-
+    compare(bool type);
 
     double evaluate(double op1, double op2) override;
 
-    char get_trig()const override{ return _trig[2]; }
 
     private:
-    string _trig;               //hold the trig string
+    bool cmpType;                  //true if max, false if min
 
 
 };

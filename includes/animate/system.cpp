@@ -10,6 +10,9 @@
 //./build/bin/main
 
 
+//./build/bin/testB
+
+
 
 
 

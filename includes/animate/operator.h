@@ -22,10 +22,9 @@ class Operator : public Token{
 
     Operator(string operand);
 
-    double evaluate(double left, double right);
-
+    virtual double evaluate(double left, double right) override;
     virtual double evaluate() override;
-    virtual int errorReport()override;
+    virtual int errorReport() override;
 
     char get_op()const override{ return _op; }
     int get_prec()const override{ return _prec; }

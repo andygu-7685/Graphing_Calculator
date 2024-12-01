@@ -69,8 +69,8 @@
         
         
         if(isRepel){
-            if ((pos.x + boxRadius) >= WORK_PANEL - 0){
-                shape.setPosition(sf::Vector2f(WORK_PANEL - boxRadius - 5, shape.getPosition().y));
+            if ((pos.x + boxRadius) >= SIDEB_X - 0){
+                shape.setPosition(sf::Vector2f(SIDEB_X - boxRadius - 5, shape.getPosition().y));
                 repelVelocity = sf::Vector2f(-1, 0);
             }
             else if ((pos.x - boxRadius) <= 0){
@@ -88,7 +88,7 @@
             }
         }
         else{
-            if ((pos.x + boxRadius) >= WORK_PANEL - 0)
+            if ((pos.x + boxRadius) >= SIDEB_X - 0)
                 velocity = sf::Vector2f(-rVal * velocity.x, rVal * velocity.y);
             if ((pos.x - boxRadius) <= 0)
                 velocity = sf::Vector2f(-rVal * velocity.x, rVal * velocity.y);

@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <stdexcept> // For standard exceptions
+#include <stdexcept>
 #include <string>
 #include "constants.h"
 #include "MyStack.h"
@@ -21,28 +21,15 @@ using namespace std;
 
 int FunctionException(vector<string> fnLst, int fnIndex, int outerfn);
 
-int syException(Stack<Token*>& op_stack, bool unkInput);
+int syException(Stack<Token*>& op_stack);
 
-int rpnException(Stack<Token *> int_stack, int condition);
+int rpnException(Stack<Token *> int_stack, bool invert = false);
 
 int InputException();
 
 int divideException(double inputVal, char _op);
 
-
-class Exception
-{
-public:
-    Exception();
-    Exception(string msg, int num);
-
-    Exception& operator =(const Exception& right);
-    string Report(int eCode);
-    int ReportCode();
-private:
-    string msg;
-    int errorCode;
-};
+int parenException(int ctr);
 
 
 
