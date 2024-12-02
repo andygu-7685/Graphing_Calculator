@@ -38,7 +38,7 @@ vector<sf::Vector2f> plot::operator()(){
     }
 
     if(_info->polar){
-        for(double i = 0; i < 2*pi; i += 0.05){
+        for(double i = 0; i < POLAR_RENDER; i += 0.05){
             sf::Vector2f coord = get_polar(i);
             if(errorFlag != 0){
                 points = vector<sf::Vector2f>();

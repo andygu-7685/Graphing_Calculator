@@ -47,6 +47,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
     inputbar[0] = "Input equation: ";
     settingbar[ST_SAVE] = "SAVE HISTORY";
     settingbar[ST_CLEAR] = "CLEAR HISTORY";
+    settingbar[ST_MODE] = "POLAR";
 
 
 
@@ -325,6 +326,17 @@ void animate::processEvents()
                         }
                         else if(rowNum == ST_CLEAR){
                             clearfile("historyData.txt", "Base:FileState:Empty:");
+                        }
+                        else if(rowNum == ST_MODE){
+                            _info->polar = !_info->polar;
+                            if(_info->polar){
+                                settingbar[ST_MODE] = "CARTESIAN";
+                            }
+                            else{
+                                settingbar[ST_MODE] = "POLAR";
+                            }
+                            system.set_info(_info);
+                            command = 2;
                         }
                         break;
 
