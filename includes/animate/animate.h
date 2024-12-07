@@ -51,6 +51,8 @@ private:
     int errorFlag;
     bool isDragging;
     int ctrlShift;
+    int cursorPos;
+    int cursorToggle;                   //keep track of cursor blank
     bool INB_Hidden;                    //true if hidden, false if show
     sf::Vector2f dragStart;
 };

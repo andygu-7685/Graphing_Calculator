@@ -59,6 +59,8 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
 
     //initialize private variable
     inputStr = "";
+    cursorPos = 0;
+    cursorToggle = 0;
     inputUID = 0;
     isDragging = false;
     sidebarMode = true;
@@ -220,9 +222,21 @@ void animate::update()
         }
 
 
-            //F1: 3x^2
+
+        string displayStr = inputStr;
+        if(cursorToggle > 100){
+            cursorToggle = 0;
+        }
+        else if(cursorToggle > 50){
+            displayStr.insert(cursorPos , 1, '|');              //add cursor display
+        }
+        else{
+            displayStr.insert(cursorPos , 1, ' ');
+        }
+        cursorToggle++;
+        inputbar[1] = displayStr;
+
         //update error label
-        inputbar[1] = inputStr;
         if(system.errorReport() == 11){
             string defStr = inputStr;
             int defError = 0;               //error flag for function definition
@@ -299,24 +313,36 @@ void animate::processEvents()
             switch (event.key.code)
             {
             case sf::Keyboard::Left:
-                sidebar[SB_KEY_PRESSED] = "LEFT ARROW";
-                PanScreen(_info, 1);
-                system.set_info(_info);
-                command = 3;
+                if(inputUID == 2){
+                    if(cursorPos > 0)
+                        cursorPos--;
+                }
+                else{
+                    sidebar[SB_KEY_PRESSED] = "LEFT ARROW";
+                    PanScreen(_info, 1);
+                    system.set_info(_info);
+                    command = 3;
+                }
                 break;
 
 
             case sf::Keyboard::Right:
-                sidebar[SB_KEY_PRESSED] = "RIGHT ARROW";
-                PanScreen(_info, 3);
-                system.set_info(_info);
-                command = 4;
+                if(inputUID == 2){
+                    if(cursorPos < inputStr.size())
+                        cursorPos++;
+                }
+                else{
+                    sidebar[SB_KEY_PRESSED] = "RIGHT ARROW";
+                    PanScreen(_info, 3);
+                    system.set_info(_info);
+                    command = 4;
+                }
                 break;
 
 
             case sf::Keyboard::Up:
                 sidebar[SB_KEY_PRESSED] = "UP ARROW";
-                PanScreen(_info, 7);
+                PanScreen(_info, 5);
                 system.set_info(_info);
                 command = 5;
                 break;
@@ -324,7 +350,7 @@ void animate::processEvents()
 
             case sf::Keyboard::Down:
                 sidebar[SB_KEY_PRESSED] = "DOWN ARROW";
-                PanScreen(_info, 5);
+                PanScreen(_info, 7);
                 system.set_info(_info);
                 command = 6;
                 break;
@@ -419,6 +445,7 @@ void animate::processEvents()
                         cout << "clicked sidebar:";
                         rowNum = sidebar.overlapText(mousePos);
                         if(rowNum >= SB_HISTORY && sidebar[rowNum] != ""){
+                            cursorPos = 0;                  //reset cursor
                             //delete the item
                             if(!sidebarMode && mousePos.x > SCREEN_WIDTH - 40){
                                 sidebar[rowNum] = " ";
@@ -517,15 +544,17 @@ void animate::processEvents()
         case sf::Event::TextEntered:
             if(event.text.unicode == 8 && inputUID == 2){
                 //if backspace is pressed
-                if(!inputStr.empty()){
-                    inputStr.pop_back();
+                if(!inputStr.empty() && cursorPos > 0){
+                    inputStr.erase(cursorPos - 1 , 1);
+                    cursorPos--;
                 }
             }                       
             else if (event.text.unicode == 13 && inputUID == 2){
                 //dont push anything when Enter is pressed
             }
             else if (event.text.unicode < 128 && inputUID == 2){
-                inputStr.push_back(static_cast<char>(event.text.unicode));
+                inputStr.insert(cursorPos, 1, static_cast<char>(event.text.unicode));
+                cursorPos++;
             }
             break;
 
@@ -733,8 +762,8 @@ vector<string> animate::LoadHistory(int& errorFlag){
 //1357
 //1 = left
 //3 = right
-//5 = down
-//7 = up
+//5 = up
+//7 = down
 void PanScreen(graph_info* _info, int dir){
     if(dir > 4){
         _info->origin.y -= (dir-6) * PANINC * _info->scale.y;

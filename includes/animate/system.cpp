@@ -70,6 +70,13 @@ void System::Step(int& command)
 
 
 
+
+
+
+
+
+
+
 void System::Draw(sf::RenderWindow &window)
 {
     window.clear();
