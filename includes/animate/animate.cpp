@@ -30,6 +30,11 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
                      inputbar(INB_X, INB_Y, INB_W, INB_H, 2), 
                      settingbar(SETB_X, SETB_Y, SETB_W, SETB_H, 3)
 {
+    for(int i = SB_HISTORY; i < 14; i++){
+        Sidebar* linePtr = new Sidebar(SIDEB_X + 10.0, 0,  10.0, 10.0 , i, -1.0);
+        linePtr->setColor(66, 138, 245);
+        fnLine.push_back(linePtr);
+    }
     cout << "animate CTOR: TOP" << endl;
     window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "SFML window!");
     window.setFramerateLimit(60);
@@ -65,6 +70,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
     isDragging = false;
     sidebarMode = true;
     INB_Hidden = true;
+    FN_Hidden = true;
     errorFlag = 0;
     _info = new graph_info( inputStr, 
                             sf::Vector2f(SCREEN_WIDTH - SIDEB_W, SCREEN_HEIGHT), 
@@ -84,7 +90,6 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
 
     //Load History
     history = LoadHistory(errorFlag);
-
     
 
 
@@ -138,6 +143,13 @@ void animate::Draw()
         inputbar.draw(window);
     settingbar.draw(window);
 
+    if(!FN_Hidden){
+        for(int i = 0; i < fnLine.size(); i++){
+            fnLine[i]->draw(window);
+        }
+    }
+
+
     if (mouseIn)
         window.draw(mousePoint);
 
@@ -145,8 +157,9 @@ void animate::Draw()
 
     if(!sidebarMode){
         int lineNum = SB_HISTORY;
-        sf::CircleShape deleteButton(10);
+        sf::Text deleteButton("X", font);
         deleteButton.setFillColor(sf::Color::Red);
+        deleteButton.setCharacterSize(20);
         vector<string> fnLstDup = _info->equLst;
         while(lineNum < SB_HISTORY_END && !fnLstDup.empty()){
             if(fnLstDup[0] != " "){
@@ -211,6 +224,7 @@ void animate::update()
             while(lineNum < SB_HISTORY_END){
                 if(!fnLstDup.empty()){
                     string temp = to_string(lineNum - SB_HISTORY) + ": ";
+                    (*fnLine[lineNum - SB_HISTORY])[0] = "> F" + temp + fnLstDup[0];
                     sidebar[lineNum] = "> F" + temp + fnLstDup[0];
                     fnLstDup.erase(fnLstDup.begin());
                 }
@@ -219,7 +233,15 @@ void animate::update()
                 }
                 lineNum++;
             }
+
+            for(int i = 0; i < 10; i++){
+                float TextBoxY = sidebar.TextX(i + SB_HISTORY);
+                float TextBoxH = sidebar.TextH(i + SB_HISTORY);
+                fnLine[i]->setYH(SIDEB_X + 10.0, TextBoxY, SIDEB_W - 10.0, TextBoxH + 5.0);
+            }
         }
+
+        
 
 
 
@@ -393,8 +415,14 @@ void animate::processEvents()
 
                 break;
 
-            case sf::Keyboard::Tab:
+            case sf::Keyboard::S:
                 _info->square_scale();
+                system.set_info(_info);
+                command = 8;
+                break;
+
+            case sf::Keyboard::A:
+                _info->square_domain();
                 system.set_info(_info);
                 command = 8;
                 break;
@@ -466,9 +494,11 @@ void animate::processEvents()
                             sidebarMode = !sidebarMode;
                             if(sidebarMode){
                                 sidebar[SB_MODE] = "HISTORY";
+                                FN_Hidden = !FN_Hidden;
                             }
                             else{
                                 sidebar[SB_MODE] = "FUNCTIONS";
+                                FN_Hidden = !FN_Hidden;
                             }
                         }
                         break;

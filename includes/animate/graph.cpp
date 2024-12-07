@@ -36,18 +36,6 @@ void graph::calc_plot(int index){
 
 void graph::draw(sf::RenderWindow &window){
     sf::Color Gray(128, 128, 128);
-    sf::Vertex xaxis[] = {
-    sf::Vertex(sf::Vector2f(0, _info->origin.y), sf::Color::White),
-    sf::Vertex(sf::Vector2f(SCREEN_WIDTH - SIDEB_W, _info->origin.y), sf::Color::White)
-    };
-
-    sf::Vertex yaxis[] = {
-    sf::Vertex(sf::Vector2f(_info->origin.x, 0), sf::Color::White),
-    sf::Vertex(sf::Vector2f(_info->origin.x, SCREEN_HEIGHT), sf::Color::White)
-    };
-    window.draw(xaxis, 2, sf::Lines);
-    window.draw(yaxis, 2, sf::Lines);
-
     for(int k = round(_info->domain.x); k < _info->domain.y; k++){
         sf::Vertex ygrid[] = {
         sf::Vertex(sf::Vector2f(k * _info->scale.x + _info->origin.x, 0), Gray),
@@ -63,6 +51,18 @@ void graph::draw(sf::RenderWindow &window){
         };
         window.draw(xgrid, 2, sf::Lines);
     }
+
+    sf::Vertex xaxis[] = {
+    sf::Vertex(sf::Vector2f(0, _info->origin.y), sf::Color::White),
+    sf::Vertex(sf::Vector2f(SCREEN_WIDTH - SIDEB_W, _info->origin.y), sf::Color::White)
+    };
+
+    sf::Vertex yaxis[] = {
+    sf::Vertex(sf::Vector2f(_info->origin.x, 0), sf::Color::White),
+    sf::Vertex(sf::Vector2f(_info->origin.x, SCREEN_HEIGHT), sf::Color::White)
+    };
+    window.draw(xaxis, 2, sf::Lines);
+    window.draw(yaxis, 2, sf::Lines);
 
 
 

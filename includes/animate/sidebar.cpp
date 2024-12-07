@@ -6,13 +6,13 @@
 
 Sidebar::Sidebar(){}
 
-Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn) 
+Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, float vertSpace, float margin) 
     : _left(left), _top(top), _width(width), _height(height), UID(UIDIn)
 {
     cout << "Sidebar CTOR: TOP" << endl;
     items.reserve(50);
-    VERTICAL_LINE_SPACING = 10.0;
-    LEFT_MARGIN = 10.0;
+    VERTICAL_LINE_SPACING = vertSpace;                  //defalut 10
+    LEFT_MARGIN = margin;                               //default 10
 
     // set up the sidebar rectangle:
     rect.setFillColor(sf::Color(105, 105, 105)); //(192,192,192)); //silver
@@ -54,7 +54,7 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn)
     ////this is how you would position text on screen:
     // sb_text.setPosition(sf::Vector2f(10, SCREEN_HEIGHT-sb_text.getLocalBounds().height-5));
 
-    items.push_back("sidebar sample text");
+    items.push_back("ST");
     // Fill the items vector with empty strings so that we can use [] to read them:
     for (int i = 0; i < 30; i++)
     {
@@ -87,7 +87,7 @@ sf::Vector2f Sidebar::getPt(int corner){
 void Sidebar::draw(sf::RenderWindow &window)
 {
     window.draw(rect);
-    float height = _top + 10.0;
+    float height = _top + VERTICAL_LINE_SPACING;
 
     for (vector<string>::iterator it = items.begin();
          it != items.end(); it++)
@@ -113,7 +113,7 @@ void Sidebar::draw(sf::RenderWindow &window)
 
 
 int Sidebar::overlapText(sf::Vector2f testPos){
-    float height = _top + 10.0;
+    float height = _top + VERTICAL_LINE_SPACING;
 
     for (vector<string>::iterator it = items.begin(); it != items.end(); it++)
     {
@@ -141,7 +141,7 @@ int Sidebar::overlapText(sf::Vector2f testPos){
 
 
 float Sidebar::TextX(int lineNum){
-    float height = _top + 10.0;
+    float height = _top + VERTICAL_LINE_SPACING;    
 
     for (vector<string>::iterator it = items.begin(); it != items.end(); it++)
     {
@@ -152,10 +152,9 @@ float Sidebar::TextX(int lineNum){
             sb_text.setString(it->c_str());
         }
 
-        float buttom = height + sb_text.getLocalBounds().height;
         if(lineNum == it - items.begin())
             return height;
-        height = buttom + VERTICAL_LINE_SPACING;
+        height += sb_text.getLocalBounds().height + VERTICAL_LINE_SPACING;
     }
     return -1;
 }
@@ -170,6 +169,27 @@ bool Sidebar::overlap(sf::Vector2f testPos){
 
 
 
+void Sidebar::setColor(float r, float g, float b){
+    rect.setFillColor(sf::Color(r, g, b));
+}
+
+float Sidebar::TextH(int lineNum){
+    vector<string>::iterator it = items.begin() + lineNum;
+    sb_text.setString(it->c_str());
+    float retVal = sb_text.getLocalBounds().height;
+    return retVal;
+}
+
+
+
+void Sidebar::setYH( float left, float top, float width, float height){
+    _top = top;
+    _left = left;
+    _height = height;
+    _width = width;
+    rect.setPosition(sf::Vector2f(_left, _top));
+    rect.setSize(sf::Vector2f(_width, _height));
+}
 
 
 

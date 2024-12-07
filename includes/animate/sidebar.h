@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cassert>
 using namespace std;
 
 
@@ -11,7 +12,7 @@ class Sidebar
 {
 public:
     Sidebar();
-    Sidebar(float left, float top, float width, float height, int UIDIn);
+    Sidebar(float left, float top, float width, float height, int UIDIn, float vertSpace = 10.0, float margin = 10.0);
     int overlapText(sf::Vector2f testPos);
     bool overlap(sf::Vector2f testPos);
     sf::Vector2f getPt(int corner);
@@ -19,6 +20,10 @@ public:
     string& operator [](int index);
     const string operator[](int index) const;
     float TextX(int lineNum);
+    float TextH(int lineNum);
+    void setColor(float r, float g, float b);
+    void setItems(vector<string> inputV) { items = inputV; }
+    void setYH( float left, float top, float width, float height);
     int getUID(){ return UID; }
 private:
     sf::RectangleShape rect;            //sidebar rectangle

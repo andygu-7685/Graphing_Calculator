@@ -47,6 +47,7 @@ private:
     Sidebar settingbar;
     string inputStr;
     vector<string> history;
+    vector<Sidebar*> fnLine;
     int inputUID;
     int errorFlag;
     bool isDragging;
@@ -54,6 +55,7 @@ private:
     int cursorPos;
     int cursorToggle;                   //keep track of cursor blank
     bool INB_Hidden;                    //true if hidden, false if show
+    bool FN_Hidden;
     sf::Vector2f dragStart;
 };
 
