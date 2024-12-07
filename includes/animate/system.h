@@ -15,11 +15,13 @@ public:
     void Draw(sf::RenderWindow& widnow);
     void set_info(graph_info* _infoIn);
     int errorReport(){ return errorFlag; }
+    void setError(int inputCode){ errorFlag = inputCode; }
 
 private:
     graph_info* _info;
     graph _g;
     int totalUID;
+    int setNum;
     int errorFlag;
 };
 

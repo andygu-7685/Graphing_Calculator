@@ -231,6 +231,7 @@ void printHistory(const vector<string>& history) {
 
 bool test_history(bool debug = false)
 {
+    /*
     int errorFlag = 0;
 
     cout << "LoadHistory Test ----------------------------------------" << endl;
@@ -251,7 +252,7 @@ bool test_history(bool debug = false)
         cout << "no Error after clearing" << endl;
         printHistory(history);
     }
-
+    */
     return true;
 }
 

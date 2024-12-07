@@ -21,6 +21,8 @@ using namespace std;
 
 int FunctionException(vector<string> fnLst, int fnIndex, int outerfn);
 
+int DefinitionException(bool isDef);
+
 int syException(Stack<Token*>& op_stack);
 
 int rpnException(Stack<Token *> int_stack, bool invert = false);
@@ -28,6 +30,10 @@ int rpnException(Stack<Token *> int_stack, bool invert = false);
 int InputException();
 
 int divideException(double inputVal, char _op);
+
+int trigException(double inputVal);
+
+int logException(double inputVal);
 
 int parenException(int ctr);
 

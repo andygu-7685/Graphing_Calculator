@@ -23,7 +23,7 @@ void plot::set_info(graph_info* _infoIn){
 
 vector<sf::Vector2f> plot::operator()(){
     points = vector<sf::Vector2f>();
-    Queue<Token*> infix1 = strToQueue(_info->equation, _info->equLst, -1, errorFlag);
+    Queue<Token*> infix1 = strToQueue(_info->equation, _info->equLst, -99, errorFlag);
     if(infix1.empty() || errorFlag != 0){
         //must push back something so the size != 0, prevent error for draw() in graph
          points.push_back(sf::Vector2f(0,0));
@@ -38,28 +38,32 @@ vector<sf::Vector2f> plot::operator()(){
     }
 
     if(_info->polar){
-        for(double i = 0; i < POLAR_RENDER; i += 0.05){
-            sf::Vector2f coord = get_polar(i);
-            if(errorFlag != 0){
-                points = vector<sf::Vector2f>();
-                points.push_back(sf::Vector2f(0,0));
-                return points;
+        for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += 0.05){
+            if(i != 0){
+                sf::Vector2f coord = get_polar(i);
+                if(errorFlag != 0){
+                    points = vector<sf::Vector2f>();
+                    points.push_back(sf::Vector2f(0,0));
+                    return points;
+                }
+                coord = sf::Vector2f(coord.y * cos(coord.x), coord.y * sin(coord.x));
+                coord = T(coord);
+                points.push_back(coord);
             }
-            coord = sf::Vector2f(coord.y * cos(coord.x), coord.y * sin(coord.x));
-            coord = T(coord);
-            points.push_back(coord);
         }
     }
     else{
         for(double i = _info->domain.x; i < _info->domain.y; i += 0.05){
-            sf::Vector2f coord = get_xy(i);
-            if(errorFlag != 0){
-                points = vector<sf::Vector2f>();
-                points.push_back(sf::Vector2f(0,0));
-                return points;
+            if(i != 0){
+                sf::Vector2f coord = get_xy(i);
+                if(errorFlag != 0){
+                    points = vector<sf::Vector2f>();
+                    points.push_back(sf::Vector2f(0,0));
+                    return points;
+                }
+                coord = T(coord);
+                points.push_back(coord);
             }
-            coord = T(coord);
-            points.push_back(coord);
         }
     }
     return points;

@@ -18,6 +18,7 @@ public:
     void draw(sf::RenderWindow& window);
     string& operator [](int index);
     const string operator[](int index) const;
+    float TextX(int lineNum);
     int getUID(){ return UID; }
 private:
     sf::RectangleShape rect;            //sidebar rectangle

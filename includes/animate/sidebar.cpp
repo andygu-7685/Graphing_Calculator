@@ -136,6 +136,32 @@ int Sidebar::overlapText(sf::Vector2f testPos){
 
 
 
+
+
+
+
+float Sidebar::TextX(int lineNum){
+    float height = _top + 10.0;
+
+    for (vector<string>::iterator it = items.begin(); it != items.end(); it++)
+    {
+        if (it->length() == 0){
+            sb_text.setString("A");
+        }
+        else{
+            sb_text.setString(it->c_str());
+        }
+
+        float buttom = height + sb_text.getLocalBounds().height;
+        if(lineNum == it - items.begin())
+            return height;
+        height = buttom + VERTICAL_LINE_SPACING;
+    }
+    return -1;
+}
+
+
+
 bool Sidebar::overlap(sf::Vector2f testPos){
     sf::Vector2f boxPt1 = getPt(1);
     sf::Vector2f boxPt2 = getPt(3);

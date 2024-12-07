@@ -23,7 +23,10 @@ void ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack){
 
 
 //return an errorFlag
-int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string> fnLst, int outerfn){
+//cmd: if 0->9 indicate function #
+//     if -1 mean no outer function
+//     if 0->(-9) mean function definition with function#
+int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string> fnLst, int cmd){
   string tempStr;
   string testStr;
 
@@ -53,19 +56,34 @@ int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string
         finalQueue.push(new compare(false));
         return 0;
     }
+    else if(testStr == "Log(" || testStr == "log("){
+        finalQueue.push(new Logarithm());               //wait for later input
+        return 0;
+    }
+
   }
 
 
 
   if(tempStr.length() == 3){
     testStr = tempStr.substr(tempStr.length() - 3, 3);
-    if((testStr[0] == 'F' || testStr[0] == 'f') && testStr[2] == '('){
+    if((testStr[0] == 'F' || testStr[0] == 'f') && (testStr[2] == '(')){
         int fnIndex = testStr[1] - '0';
-        int errorFlag = FunctionException(fnLst, fnIndex, outerfn);
-
+        int errorFlag = FunctionException(fnLst, fnIndex, cmd);
+        //in this case fnIndex represent the function we are calling
+        //see if the defining or calling function
         if(errorFlag == 0)
-          finalQueue.push(new Function(fnLst[fnIndex], 0, fnLst, fnIndex));    //wait for later function input
+            finalQueue.push(new Function(fnLst[fnIndex], 0, fnLst, fnIndex));    //wait for later input
+        
         return errorFlag;
+    }
+    else if((testStr[0] == 'F' || testStr[0] == 'f') && (testStr[2] == ':')){
+        cout << "definition detect \n";
+        return 11;
+    }
+    else if(testStr == "ln("){
+        finalQueue.push(new Logarithm(0, true));
+        return 0;
     }
   }
 
@@ -76,59 +94,59 @@ int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string
 }
 
 
-//unecessary function
-void clearQueue(Queue<char>& charQueue){
-    while(!charQueue.empty())
-        charQueue.pop();
-}
 
-Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn, int& errorFlag){
+
+
+
+//return an errorFlag
+//cmd: if 0-9 indicate function #
+//     if -1 mean no outer function
+//     if -2 mean function definition
+Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& errorFlag){
     bool inFn = false;
-    bool inCmp = false;
+    int inLog = 0;            //for log functions: 0 = not log, 1 = regular log, 2 = natural log
+    int inCmp = 0;            //for cmp functions: 0 = not cmp, 1 = in cmp name, 2 = in parenthesis
     bool strStop = false;
-    string opStr;
+    string opStr;             //turn operator to string
     Stack<char> digitStack;
     Queue<char> charQueue;
     Queue<Token*> finalQueue;
 
     for(int i = 0; i < inputStr.length(); i++){
       strStop = true;
-      //cout << "the current index: "<< i << endl;
       switch(inputStr[i]){
         case '+':
         case '-':
         case '*':
         case '/':
         case '^':
-          //cout << "op\n";
           ConvertDigit(digitStack, finalQueue);
           opStr = inputStr.substr(i, 1);
           finalQueue.push(new Operator(opStr));
           break;
         case ' ':
-          //cout << "space\n";
           ConvertDigit(digitStack, finalQueue);
           break;
         case '(':
-          //cout << "lp\n";
           ConvertDigit(digitStack, finalQueue);
           inFn = false;
+          inCmp = 2;
+          if(inLog == 2)
+            inLog == 0;
           charQueue.push('(');
           //-----------------------------------------------------------
-          errorFlag = ConvertChar(charQueue, finalQueue, fnLst, outerfn);     //detect trig & function
+          errorFlag = ConvertChar(charQueue, finalQueue, fnLst, cmd);     //detect trig & function
           if(errorFlag != 0){ return Queue<Token*>(); }
           //-----------------------------------------------------------
           finalQueue.push(new LeftParen());
           break;
         case ')':
-          //cout << "rp\n";
           ConvertDigit(digitStack, finalQueue);
           finalQueue.push(new RightParen());
           break;
         case 'X':
         case 'x':
-          //cout << "var\n";
-          if(inCmp){
+          if(inCmp == 1){
             charQueue.push(inputStr[i]);
             strStop = false;
           }
@@ -137,33 +155,53 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn, int
           }
           break;
         case ',':
-          if(inCmp){
+          if(inCmp == 2){
               ConvertDigit(digitStack, finalQueue);
-              inCmp = false;
+              inCmp = 0;
           }
+          else if(inLog == 1){                      //only for regular log
+              ConvertDigit(digitStack, finalQueue);
+              inLog = 0;
+          }
+          break;
+        case ':':
+          if(inFn){
+              inCmp = 0;
+              inLog = 0;
+              clearStack(digitStack);
+              clearQueue(finalQueue);
+              charQueue.push(inputStr[i]);
+              errorFlag = ConvertChar(charQueue, finalQueue, fnLst, cmd);
+              if(errorFlag != 0){ return Queue<Token*>(); }
+          }
+          break;
+        case '>':
+            i += 4;     //skip 4 char after
           break;
         default:
           if((inputStr[i] - '0' < 10 && inputStr[i] - '0' >= 0 && !inFn) || inputStr[i] == '.'){
-            //cout << "num\n";
             digitStack.push(inputStr[i]);
             break;
           }
-          //cout << "alpha\n";
           if(inputStr[i] == 'F' || inputStr[i] == 'f')
             inFn = true;
           if(inputStr[i] == 'M' || inputStr[i] == 'm')
-            inCmp = true;
+            inCmp = 1;
+          if(inputStr[i] == 'L' || inputStr[i] == 'l')
+            inLog = 1;
+          if(inputStr[i] == 'n' && inLog == 1)
+            inLog = 2;                          //for natural log
           charQueue.push(inputStr[i]);
           strStop = false;
           break;
       }
       if(strStop){
-        errorFlag = ConvertChar(charQueue, finalQueue, fnLst, outerfn);
+        errorFlag = ConvertChar(charQueue, finalQueue, fnLst, cmd);
         if(errorFlag != 0){ return Queue<Token*>(); }
       }
     }
     ConvertDigit(digitStack, finalQueue);
-    errorFlag = ConvertChar(charQueue, finalQueue, fnLst, outerfn);
+    errorFlag = ConvertChar(charQueue, finalQueue, fnLst, cmd);
     if(errorFlag != 0){ return Queue<Token*>(); }
     return finalQueue;
 }
@@ -190,20 +228,29 @@ double rpnAlgorithm( Queue<Token*> input_q, int& errorFlag, double fnInput ){
         double result;
         Token* op1;
         Token* op2;
-        if(walker->get_op() == 'T' || walker->get_op() == 'F'){
+
+        if(walker->get_op() == 'T' || walker->get_op() == 'F' ||
+          (walker->get_op() == 'L' && walker->get_ln() == true)){
             //-----------------------------------------------------------
             errorFlag = rpnException(int_stack);
             if(errorFlag != 0){ return 0; }
             op1 = int_stack.pop();
             //-----------------------------------------------------------
+            //keep this first cond. or it will create a bunch of cout b/c of default get_ln
+            if(walker->get_op() == 'L' && walker->get_ln() == true)           //for natural log
+              walker->set_base(e);
+  
+      
             result = walker->evaluate(op1->get_int());
             errorFlag = walker->errorReport();
+            if(errorFlag != 0){ return 0; }
         }
         else{
             //-----------------------------------------------------------
             errorFlag = rpnException(int_stack);
             if(errorFlag != 0){ return 0; }
             op1 = int_stack.pop();
+            
             errorFlag = divideException(op1->get_int(), walker->get_op());
             if(errorFlag != 0){ return 0; }
             //-----------------------------------------------------------
@@ -211,7 +258,15 @@ double rpnAlgorithm( Queue<Token*> input_q, int& errorFlag, double fnInput ){
             if(errorFlag != 0){ return 0; }
             op2 = int_stack.pop();
             //-----------------------------------------------------------
-            result = walker->evaluate(op2->get_int(), op1->get_int());
+            if(walker->get_op() == 'L'){                        //for regular log
+              walker->set_base(op2->get_int());
+              result = walker->evaluate(op1->get_int());
+              errorFlag = walker->errorReport();                //only log has this error handling, all other do not ned
+              if(errorFlag != 0){ return 0; }
+            }
+            else{
+              result = walker->evaluate(op2->get_int(), op1->get_int());
+            }
         }
 
         Token* store = new Integer(result);
@@ -327,7 +382,12 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
     }
 
     double Function::evaluate(double uniInput){
-        return rpnAlgorithm(syAlgorithm(fnQueue, errorFlag), errorFlag, uniInput);
+        if(errorFlag != 0){ return 0; }               //if there's error in the constructor step
+        Queue<Token*> sy1 = syAlgorithm(fnQueue, errorFlag);
+        if(errorFlag != 0){ return 0; }
+        double answer = rpnAlgorithm(sy1 , errorFlag, uniInput);
+        if(errorFlag != 0){ return 0; }
+        return answer;
     }
 
 

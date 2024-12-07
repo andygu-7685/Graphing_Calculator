@@ -46,9 +46,18 @@
         return -1;
     }
 
-    char Token::get_trig()const {
+    string Token::get_trig()const {
         cout << "Token get_trig function excuted";
-        return 'a';
+        return "a";
+    }
+
+    bool Token::get_ln()const {
+        cout << "Token get_ln function excuted";
+        return false;
+    }
+
+    void Token::set_base(double input){
+        cout << "Token set_base function excuted";
     }
 
     int Token::errorReport(){

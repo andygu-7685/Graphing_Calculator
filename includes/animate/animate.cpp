@@ -8,7 +8,7 @@ using namespace std;
 
 
 const vector<string> errorMsg = {   "No Error",
-                                    "Error: Invalid function name.",
+                                    "Error: Invalid function name1.",
                                     "Error: the function should not self reference.",
                                     "Error: the function you referenced do not exist.",
                                     "Error: missing leftparen.",
@@ -17,7 +17,10 @@ const vector<string> errorMsg = {   "No Error",
                                     "Error: invalid input.",
                                     "Error: unknown Input.",
                                     "Error: divide by zero.",
-                                    "Error: Missing rightparen" };
+                                    "Error: Missing rightparen",
+                                    "Error: Invalid function name2",
+                                    "Error: Invalid trig Input",
+                                    "Error: Invalid log Input" };
 
 
 
@@ -45,6 +48,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
 
     //default text
     inputbar[0] = "Input equation: ";
+    sidebar[SB_MODE] = "HISTORY";
     settingbar[ST_SAVE] = "SAVE HISTORY";
     settingbar[ST_CLEAR] = "CLEAR HISTORY";
     settingbar[ST_MODE] = "POLAR";
@@ -55,7 +59,10 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
 
     //initialize private variable
     inputStr = "";
+    inputUID = 0;
     isDragging = false;
+    sidebarMode = true;
+    INB_Hidden = true;
     errorFlag = 0;
     _info = new graph_info( inputStr, 
                             sf::Vector2f(SCREEN_WIDTH - SIDEB_W, SCREEN_HEIGHT), 
@@ -97,7 +104,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
         exit(-1);
     }
 
-    myTextLabel = sf::Text("Initial String for myTextLabel", font);
+    myTextLabel = sf::Text("EL PSY CONGROO: Andy Gu", font);
     myTextLabel.setCharacterSize(20);
     myTextLabel.setStyle(sf::Text::Bold);
     myTextLabel.setFillColor(sf::Color::Green);
@@ -109,18 +116,45 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 void animate::Draw()
 {
     // Look at the data and based on the data, draw shapes on window object.
     system.Draw(window);
     sidebar.draw(window);
-    inputbar.draw(window);
+    if(!INB_Hidden)
+        inputbar.draw(window);
     settingbar.draw(window);
 
     if (mouseIn)
         window.draw(mousePoint);
 
-    
+
+
+    if(!sidebarMode){
+        int lineNum = SB_HISTORY;
+        sf::CircleShape deleteButton(10);
+        deleteButton.setFillColor(sf::Color::Red);
+        vector<string> fnLstDup = _info->equLst;
+        while(lineNum < SB_HISTORY_END && !fnLstDup.empty()){
+            if(fnLstDup[0] != " "){
+                deleteButton.setPosition(sf::Vector2f(SCREEN_WIDTH - 20, sidebar.TextX(lineNum)));
+                window.draw(deleteButton);
+            }
+            fnLstDup.erase(fnLstDup.begin());
+            lineNum++;
+        }
+    }
     //- - - - - - - - - - - - - - - - - - -
     // getPosition() gives you screen coords, getPosition(window) gives you window coords
     // cout<<"mosue pos: "<<sf::Mouse::getPosition(window).x<<", "<<sf::Mouse::getPosition(window).y<<endl;
@@ -141,6 +175,10 @@ void animate::update()
     // cause changes to the data for the next frame
     system.Step(command);
     command = 0;
+    
+    sidebar[SB_KEY_PRESSED] = "( " + to_string(_info->range.x) + ", " + to_string(_info->range.y) + " )";
+    if(INB_Hidden && inputUID == 2)
+        inputUID = 0;
 
     if (mouseIn)
     {
@@ -151,17 +189,80 @@ void animate::update()
         sidebar[SB_MOUSE_POSITION] = mouse_pos_string(window);
 
         // update the sidebar with history
-        int lineNum = SB_HISTORY;
-        vector<string> historyDup = history;
-        while(lineNum < 25 && !historyDup.empty()){
-            sidebar[lineNum] = historyDup.back();
-            historyDup.pop_back();
-            lineNum++;
+        if(sidebarMode){
+            int lineNum = SB_HISTORY;
+            vector<string> historyDup = history;
+            while(lineNum < SB_HISTORY_END){
+                if(!historyDup.empty()){
+                    sidebar[lineNum] = historyDup.back();
+                    historyDup.pop_back();
+                }
+                else{
+                    sidebar[lineNum] = "";
+                }
+                lineNum++;
+            }
+        }
+        else{
+            int lineNum = SB_HISTORY;
+            vector<string> fnLstDup = _info->equLst;
+            while(lineNum < SB_HISTORY_END){
+                if(!fnLstDup.empty()){
+                    string temp = to_string(lineNum - SB_HISTORY) + ": ";
+                    sidebar[lineNum] = "> F" + temp + fnLstDup[0];
+                    fnLstDup.erase(fnLstDup.begin());
+                }
+                else{
+                    sidebar[lineNum] = "";
+                }
+                lineNum++;
+            }
         }
 
 
+            //F1: 3x^2
         //update error label
-        if(system.errorReport() != 0){
+        inputbar[1] = inputStr;
+        if(system.errorReport() == 11){
+            string defStr = inputStr;
+            int defError = 0;               //error flag for function definition
+            int fnIndex = defStr[1] - '0';
+
+            assert(defStr.size() > 3);         //already debuged
+            Queue<Token*> testPostfix;
+            Queue<Token*> testQueue = strToQueue(defStr.substr(3, defStr.size() - 3), _info->equLst, fnIndex, defError);
+            if(defError == 0){
+                ShuntingYard sytest(testQueue);
+                testPostfix = sytest.postfix(defError);
+            }
+            if(defError == 0){
+                RPN rpntest(testPostfix);
+                rpntest(defError, 1);
+            }
+
+
+
+            if(defError != 0){
+                inputbar[0] = errorMsg[defError];
+                system.setError(-98);
+            }
+            else{
+                if(fnIndex < 10 && fnIndex >= 0){
+                    (_info->equLst)[fnIndex] = defStr.substr(3, defStr.size() - 3);
+                    history.push_back(defStr.substr(3, defStr.size() - 3));
+                    system.setError(0);
+                    INB_Hidden = !INB_Hidden;
+                }
+                else{
+                    inputbar[0] = errorMsg[system.errorReport()];           //if the name of function defining is invalid
+                    system.setError(-98);
+                }
+            }
+        }
+        else if(system.errorReport() == -98){
+            //nothing happen
+        }
+        else if(system.errorReport() != 0){
             inputbar[0] = errorMsg[system.errorReport()];
         }
         else{
@@ -180,6 +281,7 @@ void animate::render()
 void animate::processEvents()
 {
     sf::Event event;
+    int zoomMode;
     
 
     while (window.pollEvent(event)) // or waitEvent
@@ -228,7 +330,7 @@ void animate::processEvents()
                 break;
 
 
-            case sf::Keyboard::I:
+            case sf::Keyboard::PageUp:
                 sidebar[SB_KEY_PRESSED] = "ZOOM IN";
                 ZoomScr(1, _info, mousePos);
                 system.set_info(_info);
@@ -236,7 +338,7 @@ void animate::processEvents()
                 break;
 
 
-            case sf::Keyboard::O:
+            case sf::Keyboard::PageDown:
                 sidebar[SB_KEY_PRESSED] = "ZOOM OUT";
                 ZoomScr(2, _info, mousePos);
                 system.set_info(_info);
@@ -245,14 +347,30 @@ void animate::processEvents()
 
 
             case sf::Keyboard::Enter:
-                if(inputUID == 2){
+                if(inputUID == 2 && !INB_Hidden){
                     _info->equation = inputStr;
+                    cout << "input: " << inputStr << endl;
                     system.set_info(_info);
                     command = 2;
                     system.Step(command);
-                    if(system.errorReport() == 0)
+                    if(system.errorReport() == 0){
                         history.push_back(inputStr);
+                        INB_Hidden = !INB_Hidden;
+                    }
+                    
+                    if(system.errorReport() == 11)
+                        _info->equation = " ";
                 }
+                else if(INB_Hidden){
+                    INB_Hidden = !INB_Hidden;
+                }
+
+                break;
+
+            case sf::Keyboard::Tab:
+                _info->square_scale();
+                system.set_info(_info);
+                command = 8;
                 break;
 
 
@@ -300,11 +418,31 @@ void animate::processEvents()
                     case 1:                 //sidebar
                         cout << "clicked sidebar:";
                         rowNum = sidebar.overlapText(mousePos);
-                        if(rowNum >= 3 && sidebar[rowNum] != ""){
-                            inputStr = sidebar[rowNum];
-                            _info->equation = inputStr;
-                            system.set_info(_info);
-                            command = 2;
+                        if(rowNum >= SB_HISTORY && sidebar[rowNum] != ""){
+                            //delete the item
+                            if(!sidebarMode && mousePos.x > SCREEN_WIDTH - 40){
+                                sidebar[rowNum] = " ";
+                                _info->equLst[rowNum - SB_HISTORY] = " ";
+                                inputStr = "";
+                                _info->equation = inputStr;
+                                system.set_info(_info);
+                                command = 2;
+                            }
+                            else{
+                                inputStr = sidebar[rowNum];
+                                _info->equation = inputStr;
+                                system.set_info(_info);
+                                command = 2;
+                            }
+                        }
+                        else if(rowNum == SB_MODE){
+                            sidebarMode = !sidebarMode;
+                            if(sidebarMode){
+                                sidebar[SB_MODE] = "HISTORY";
+                            }
+                            else{
+                                sidebar[SB_MODE] = "FUNCTIONS";
+                            }
                         }
                         break;
 
@@ -316,11 +454,20 @@ void animate::processEvents()
                         cout << "clicked setting bar:";
                         rowNum = settingbar.overlapText(mousePos);
                         if(rowNum == ST_SAVE){
+                            vector<string> historyDup = history;
                             clearfile("historyData.txt", "Base:FileState:Data:");
                             ofstream historyIn("historyData.txt", ios::app);
-                            while(!history.empty()){
-                                historyIn << history.begin()->c_str() << "\n";
-                                history.erase(history.begin());
+                            while(!historyDup.empty()){
+                                historyIn << historyDup.begin()->c_str() << "\n";
+                                historyDup.erase(historyDup.begin());
+                            }
+
+
+                            historyIn << "Base:FileState:Functions:" << "\n";
+                            vector<string> fnLstDup = _info->equLst;
+                            while(!fnLstDup.empty()){
+                                historyIn << fnLstDup.begin()->c_str() << "\n";
+                                fnLstDup.erase(fnLstDup.begin());
                             }
                             historyIn.close();
                         }
@@ -349,12 +496,21 @@ void animate::processEvents()
 
 
         case sf::Event::MouseWheelScrolled:
+            zoomMode = 0;                       //0 = default, 1 = xzoom, 2 = yzoom
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)){
+                zoomMode = 1;
+            }
+            else if(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)){
+                zoomMode = 2;
+            }
+
+
             if(event.mouseWheelScroll.delta != 0 && mouseIn){
-                ZoomScr(3, _info, mousePos, event.mouseWheelScroll.delta);
-                sidebar[SB_KEY_PRESSED] = "( " + to_string(_info->domain.x) + ", " + to_string(_info->domain.y) + " )";
+                ZoomScr(3, _info, mousePos, event.mouseWheelScroll.delta, zoomMode);
                 system.set_info(_info);
                 command = 9;
             }
+            
             break;
 
 
@@ -363,16 +519,13 @@ void animate::processEvents()
                 //if backspace is pressed
                 if(!inputStr.empty()){
                     inputStr.pop_back();
-                    inputbar[1] = inputStr;
                 }
             }                       
             else if (event.text.unicode == 13 && inputUID == 2){
                 //dont push anything when Enter is pressed
-                inputbar[1] = inputStr;
             }
             else if (event.text.unicode < 128 && inputUID == 2){
                 inputStr.push_back(static_cast<char>(event.text.unicode));
-                inputbar[1] = inputStr;
             }
             break;
 
@@ -539,7 +692,7 @@ void clearfile(const string& fileName, const string& baseStr){
 
 
 
-vector<string> LoadHistory(int& errorFlag){
+vector<string> animate::LoadHistory(int& errorFlag){
     vector<string> history;
     string metaData, equationData;
     ifstream fin("historyData.txt");
@@ -550,9 +703,23 @@ vector<string> LoadHistory(int& errorFlag){
     }
 
     getline(fin, metaData);
+    int section = 1;        //1 = history , 2 = function
+    int fnCtr = 0;
     if(metaData == "Base:FileState:Data:"){
-        while(getline(fin, equationData))
-            history.push_back(equationData);
+        while(getline(fin, equationData)){
+            if(equationData == "Base:FileState:Functions:"){
+                section = 2;
+            }
+            else{
+                if(section == 1){
+                    history.push_back(equationData);
+                }
+                else if(section == 2){
+                    _info->equLst[fnCtr] = equationData;
+                    fnCtr++;
+                }
+            }
+        }
     }
 
     fin.close();
@@ -571,8 +738,8 @@ vector<string> LoadHistory(int& errorFlag){
 void PanScreen(graph_info* _info, int dir){
     if(dir > 4){
         _info->origin.y -= (dir-6) * PANINC * _info->scale.y;
-        _info->range.x += (dir-6) * PANINC;
-        _info->range.y += (dir-6) * PANINC;
+        _info->range.x -= (dir-6) * PANINC;
+        _info->range.y -= (dir-6) * PANINC;
     }
     else{
         _info->origin.x -= (dir-2) * PANINC * _info->scale.x;
@@ -587,8 +754,8 @@ void PanScreen(graph_info* _info, sf::Vector2f diff){
     _info->origin.y += diff.y;
     _info->domain.x -= diff.x / _info->scale.x;
     _info->domain.y -= diff.x / _info->scale.x;
-    _info->range.x -= diff.y / _info->scale.y;
-    _info->range.y -= diff.y / _info->scale.y;
+    _info->range.x += diff.y / _info->scale.y;
+    _info->range.y += diff.y / _info->scale.y;
 }
 
 

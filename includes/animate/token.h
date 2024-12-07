@@ -65,7 +65,9 @@ class Token{
     virtual char get_name()const ;
     virtual int get_prec()const ;
 
-    virtual char get_trig()const ;
+    virtual string get_trig()const ;
+    virtual bool get_ln()const;
+    virtual void set_base(double input);
 
     virtual int errorReport();
 

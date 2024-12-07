@@ -37,6 +37,9 @@
             case 'C':
                 _prec = 4;
             break;
+            case 'L':
+                _prec = 4;
+                break;
             default:
                 cout << "Invalid Operand in constructor\n";
             break;

@@ -27,8 +27,9 @@ System::System()
 System::System(graph_info* _infoIn)
 {
     _info = _infoIn;
+    setNum = 1;
     _g = graph(_infoIn);
-    _g.calc_plot();
+    _g.calc_plot(1);
     errorFlag = 0;
 }
 //------------------------------------------------------------------
@@ -47,6 +48,7 @@ void System::set_info(graph_info* _infoIn){
 //if 1 = function changed or zoomed 
 void System::Step(int& command)
 {
+    
     switch(command){
         case 2:
         case 3:
@@ -56,7 +58,7 @@ void System::Step(int& command)
         case 7:
         case 8:
         case 9:
-                _g.calc_plot();
+                _g.calc_plot(1);
                 errorFlag = _g.errorReport();
             break;
         default:

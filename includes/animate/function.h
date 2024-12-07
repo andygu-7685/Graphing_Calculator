@@ -13,6 +13,7 @@
 #include "rightparen.h"
 #include "variable.h"
 #include "trig.h"
+#include "logarithm.h"
 #include "MyQueue.h"
 #include "MyStack.h"
 #include "exception.h"
@@ -22,11 +23,11 @@
 
 void ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack);
 
-int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string> fnLst, int outerfn);
+int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string> fnLst, int cmd);
 
 void clearQueue(Queue<char>& charQueue);
 
-Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int outerfn, int& errorFlag);
+Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& errorFlag);
 
 double rpnAlgorithm(Queue<Token*> input_q, int& errorFlag, double fnInput = 0);
 
@@ -53,6 +54,23 @@ class Function : public Operator{
     int errorFlag;
 
 };
+
+
+
+
+
+//unecessary function
+template<class T>
+void clearQueue(Queue<T>& charQueue){
+    while(!charQueue.empty())
+        charQueue.pop();
+}
+
+template<class T>
+void clearStack(Stack<T>& digitStack){
+    while(!digitStack.empty())
+        digitStack.pop();
+}
 
 
 
