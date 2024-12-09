@@ -13,6 +13,7 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, fl
     items.reserve(50);
     VERTICAL_LINE_SPACING = vertSpace;                  //defalut 10
     LEFT_MARGIN = margin;                               //default 10
+    lineColors = vector<sf::Color>(25 , sf::Color::White);
 
     // set up the sidebar rectangle:
     rect.setFillColor(sf::Color(105, 105, 105)); //(192,192,192)); //silver
@@ -49,7 +50,7 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, fl
     sb_text.setFont(font);
     sb_text.setCharacterSize(20);
     sb_text.setStyle(sf::Text::Bold);
-    sb_text.setFillColor(sf::Color::Yellow);
+    sb_text.setFillColor(sf::Color::White);
 
     ////this is how you would position text on screen:
     // sb_text.setPosition(sf::Vector2f(10, SCREEN_HEIGHT-sb_text.getLocalBounds().height-5));
@@ -92,6 +93,7 @@ void Sidebar::draw(sf::RenderWindow &window)
     for (vector<string>::iterator it = items.begin();
          it != items.end(); it++)
     {
+        sb_text.setColor(lineColors[it - items.begin()]);
         bool blank = false;
         if (it->length() == 0)
         {
@@ -169,8 +171,8 @@ bool Sidebar::overlap(sf::Vector2f testPos){
 
 
 
-void Sidebar::setColor(float r, float g, float b){
-    rect.setFillColor(sf::Color(r, g, b));
+void Sidebar::setColor(sf::Color inputColor){
+    rect.setFillColor(inputColor);
 }
 
 float Sidebar::TextH(int lineNum){
@@ -182,7 +184,7 @@ float Sidebar::TextH(int lineNum){
 
 
 
-void Sidebar::setYH( float left, float top, float width, float height){
+void Sidebar::setAll( float left, float top, float width, float height){
     _top = top;
     _left = left;
     _height = height;

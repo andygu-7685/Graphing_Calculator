@@ -21,15 +21,17 @@ public:
     const string operator[](int index) const;
     float TextX(int lineNum);
     float TextH(int lineNum);
-    void setColor(float r, float g, float b);
+    void setColor(sf::Color inputColor);
     void setItems(vector<string> inputV) { items = inputV; }
-    void setYH( float left, float top, float width, float height);
+    void setAll( float left, float top, float width, float height);
+    void setLineColor(sf::Color inputColor, int lineNum){ lineColors[lineNum] = inputColor; }
     int getUID(){ return UID; }
 private:
     sf::RectangleShape rect;            //sidebar rectangle
     vector<string> items;               //strings to place on the sidebar
     sf::Font font;                      //used to draw text
     sf::Text sb_text;                   //used to draw strings on the window object
+    vector<sf::Color> lineColors;
 
     double VERTICAL_LINE_SPACING;
     double LEFT_MARGIN;

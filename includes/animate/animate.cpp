@@ -31,8 +31,8 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
                      settingbar(SETB_X, SETB_Y, SETB_W, SETB_H, 3)
 {
     for(int i = SB_HISTORY; i < 14; i++){
-        Sidebar* linePtr = new Sidebar(SIDEB_X + 10.0, 0,  10.0, 10.0 , i, -1.0);
-        linePtr->setColor(66, 138, 245);
+        Sidebar* linePtr = new Sidebar(SIDEB_X, 0,  10.0, 10.0 , i, -1.0);
+        linePtr->setColor(sf::Color(60, 64, 59));
         fnLine.push_back(linePtr);
     }
     cout << "animate CTOR: TOP" << endl;
@@ -54,7 +54,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
     //default text
     inputbar[0] = "Input equation: ";
     sidebar[SB_MODE] = "HISTORY";
-    settingbar[ST_SAVE] = "SAVE HISTORY";
+    settingbar[ST_SAVE] = "SAVE ALL";
     settingbar[ST_CLEAR] = "CLEAR HISTORY";
     settingbar[ST_MODE] = "POLAR";
 
@@ -111,7 +111,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
         exit(-1);
     }
 
-    myTextLabel = sf::Text("EL PSY CONGROO: Andy Gu", font);
+    myTextLabel = sf::Text("Duckies", font);
     myTextLabel.setCharacterSize(20);
     myTextLabel.setStyle(sf::Text::Bold);
     myTextLabel.setFillColor(sf::Color::Green);
@@ -237,7 +237,7 @@ void animate::update()
             for(int i = 0; i < 10; i++){
                 float TextBoxY = sidebar.TextX(i + SB_HISTORY);
                 float TextBoxH = sidebar.TextH(i + SB_HISTORY);
-                fnLine[i]->setYH(SIDEB_X + 10.0, TextBoxY, SIDEB_W - 10.0, TextBoxH + 5.0);
+                fnLine[i]->setAll(SIDEB_X + 5.0, TextBoxY, SIDEB_W - 5.0, TextBoxH + 5.0);
             }
         }
 
@@ -415,16 +415,29 @@ void animate::processEvents()
 
                 break;
 
-            case sf::Keyboard::S:
+            case sf::Keyboard::Tab:
                 _info->square_scale();
                 system.set_info(_info);
                 command = 8;
                 break;
 
-            case sf::Keyboard::A:
+            case sf::Keyboard::BackSlash:
                 _info->square_domain();
                 system.set_info(_info);
                 command = 8;
+                break;
+
+            case sf::Keyboard::RShift:
+            /*
+                if(_info->polar){
+                    _info->derive = false;
+                }
+                else{
+                    _info->derive = !_info->derive;
+                    system.set_info(_info);
+                    command = 8;
+                }
+                */
                 break;
 
 
@@ -529,15 +542,34 @@ void animate::processEvents()
                             historyIn.close();
                         }
                         else if(rowNum == ST_CLEAR){
-                            clearfile("historyData.txt", "Base:FileState:Empty:");
+                            clearfile("historyData.txt", "Base:FileState:Data:");
+                            ofstream historyIn("historyData.txt", ios::app);
+                            historyIn << "Base:FileState:Functions:" << "\n";
+                            vector<string> fnLstDup = _info->equLst;
+                            while(!fnLstDup.empty()){
+                                historyIn << fnLstDup.begin()->c_str() << "\n";
+                                fnLstDup.erase(fnLstDup.begin());
+                            }
+                            historyIn.close();
                         }
                         else if(rowNum == ST_MODE){
-                            _info->polar = !_info->polar;
-                            if(_info->polar){
-                                settingbar[ST_MODE] = "CARTESIAN";
+                            if(_info->Gmode == 1){
+                                
+                                _info->Gmode++;
                             }
                             else{
+                                _info->Gmode++;
+                            }
+                            if(_info->Gmode >= 3)
+                                _info->Gmode = 0;
+                            if(_info->Gmode == 0){
+                                settingbar[ST_MODE] = "CARTESIAN";
+                            }
+                            else if(_info->Gmode == 1){
                                 settingbar[ST_MODE] = "POLAR";
+                            }
+                            else{
+                                settingbar[ST_MODE] = "DERIVATIVE";
                             }
                             system.set_info(_info);
                             command = 2;
@@ -596,6 +628,23 @@ void animate::processEvents()
         default:
             break;
         }
+        
+        sidebar.setLineColor(sf::Color::White, SB_MODE);
+        settingbar.setLineColor(sf::Color::White, ST_CLEAR);
+        settingbar.setLineColor(sf::Color::White, ST_SAVE);
+        settingbar.setLineColor(sf::Color::White, ST_MODE);
+        int lineID;
+        int hoverUID = scanOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
+        if(hoverUID == 1){
+            lineID = sidebar.overlapText(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
+            if(lineID == SB_MODE)
+                sidebar.setLineColor(sf::Color::Yellow, SB_MODE);
+        }
+        else if(hoverUID == 3){
+            lineID = settingbar.overlapText(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
+            if(lineID == ST_SAVE || lineID == ST_CLEAR || lineID == ST_MODE)
+                settingbar.setLineColor(sf::Color::Yellow, lineID);
+        }
     }
 }
 
@@ -648,13 +697,26 @@ string mouse_pos_string(sf::RenderWindow &window)
 //2 = only zoom y
 void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mouse_delta, int axis){
     //the zoom rate depend on the ratio of the screen
+    double zoomFractY;
+    double zoomFractX;
+    if((_info->range.y - _info->range.x) > (_info->domain.y - _info->domain.x)){
+        zoomFractY = (_info->domain.y - _info->domain.x) / 50.0;
+        zoomFractX = (_info->domain.y - _info->domain.x) / 50.0;
+    }
+    else{
+        zoomFractY = (_info->range.y - _info->range.x) / 50.0;
+        zoomFractX = (_info->range.y - _info->range.x) / 50.0;
+    }
+
     double xratio1(_info->dimensions.x / _info->dimensions.y), xratio2(_info->dimensions.x / _info->dimensions.y);
     double yratio1(1), yratio2(1);
     if(axis == 1){                      //only zoom x
+        zoomFractX = (_info->domain.y - _info->domain.x) / 50.0;
         yratio1 = 0;
         yratio2 = 0;
     }
     else if(axis == 2){                 //only zoom y
+        zoomFractY = (_info->range.y - _info->range.x) / 50.0;
         xratio1 = 0;
         xratio2 = 0;
     }
@@ -689,20 +751,27 @@ void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mou
         Zoom = -1;
     
     //if mouse zoom
-    if(input_type == 3 && mouse_delta > 0 &&
-       _info->domain.y - _info->domain.x >= MIN_RANGE &&
-       _info->range.y - _info->range.x >= MIN_RANGE)
-        Zoom = 1;
+    if(input_type == 3 && mouse_delta > 0){
+       if((axis == 1 && (_info->domain.y - _info->domain.x) >= MIN_RANGE) ||
+          (axis == 2 && (_info->range.y - _info->range.x) >= MIN_RANGE))
+            Zoom = 1;
+
+       if(axis == 0 && ((_info->domain.y - _info->domain.x) >= MIN_RANGE) &&
+         ((_info->range.y - _info->range.x) >= MIN_RANGE))
+            Zoom = 1;
+    }
     if(input_type == 3 && mouse_delta < 0)
         Zoom = -1;
 
 
     //if there's a zoom
     if(Zoom == 1 || Zoom == -1){
-        _info->domain.x += xratio1 * ZOOMRATE * Zoom;
-        _info->domain.y -= xratio2 * ZOOMRATE * Zoom;
-        _info->range.x += yratio2 * ZOOMRATE * Zoom;
-        _info->range.y -= yratio1 * ZOOMRATE * Zoom;
+        _info->domain.x += xratio1 * zoomFractX * Zoom;
+        _info->domain.y -= xratio2 * zoomFractX * Zoom;
+        _info->range.x += yratio2 * zoomFractY * Zoom;
+        _info->range.y -= yratio1 * zoomFractY * Zoom;
+        //assert((_info->domain.y - _info->domain.x) > 0);
+        //assert((_info->range.y - _info->range.x) > 0);
     }
 
 

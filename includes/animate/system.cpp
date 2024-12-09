@@ -14,6 +14,9 @@
 
 
 
+//axial zoom and dynamic coordinate
+//
+
 
 
 System::System()
@@ -58,8 +61,14 @@ void System::Step(int& command)
         case 7:
         case 8:
         case 9:
-                _g.calc_plot(1);
-                errorFlag = _g.errorReport();
+                //if(_info->Gmode == 0 || _info->Gmode == 1){
+                    _g.calc_plot(1);
+                    errorFlag = _g.errorReport();
+                //}
+                //else{
+                //    _g.calc_derivative(1);
+                //    errorFlag = _g.errorReport();
+                //}
             break;
         default:
             break;

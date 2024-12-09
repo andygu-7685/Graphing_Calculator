@@ -1,7 +1,8 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-
+#include<sstream>
+#include<string>
 #include "graph_info.h"
 #include "plot.h"
 #include "translate.h"
@@ -20,11 +21,13 @@ class graph{
 
     void set_info(graph_info* _infoIn);
     void calc_plot(int index);
+    void calc_derivative(int index);
     void draw(sf::RenderWindow &window);
     int errorReport(){ return errorFlag; }
 
 
     private:
+    sf::Font font;
     graph_info* _info;
     sf::CircleShape pt;
     vector<sf::Vector2f> points;
@@ -37,6 +40,8 @@ class graph{
 
 
 
+
+string floatToString(float value);
 
 
 

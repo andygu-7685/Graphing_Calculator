@@ -11,8 +11,8 @@ const double FRICTION_COEF = 0.004;
 const double GRAVITY = 0.02;
 const double COLLISION_COEF = 0.02;
 const double PANINC = 1;                    //how much to pan in plotting coordinate
-const double ZOOMRATE = 1;                  //how much to zoom in plotting coordinate
-const double MIN_RANGE = 3;                 //smallest range for the graph 
+const double ZOOMRATE = 2;                  //how much to zoom in plotting coordinate
+const double MIN_RANGE = 0.01;                 //smallest range for the graph 
 const double POLAR_RENDER_H = 4*pi;
 const double POLAR_RENDER_L = -4*pi;
 
@@ -42,7 +42,7 @@ const int SB_MOUSE_CLICKED = SB_MOUSE_POSITION + 1;
 const int SB_KEY_PRESSED = SB_MOUSE_CLICKED + 1;
 const int SB_MODE = SB_KEY_PRESSED + 1;
 const int SB_HISTORY = SB_MODE + 1;
-const int SB_HISTORY_END = 25;
+const int SB_HISTORY_END = 20;
 
 const int IN_EQUATION = 1;
 

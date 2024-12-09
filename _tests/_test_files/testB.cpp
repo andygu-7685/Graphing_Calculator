@@ -74,7 +74,7 @@ bool test_plot(bool debug = false)
     info.equation = "sin(x)";
     info.equLst = fnLst;
     info.domain = sf::Vector2f(-3.14, 3.14);
-    info.polar = false;
+    info.Gmode = 0;
 
     plot myPlot(&info);
     vector<sf::Vector2f> points = myPlot();
@@ -99,7 +99,7 @@ bool test_plot(bool debug = false)
     // polar coordinates
     info.equation = "cos(x)";
     info.domain = sf::Vector2f(0, 2 * pi);
-    info.polar = true;
+    info.Gmode = 1;
     myPlot.set_info(&info);
     points = myPlot();
 
