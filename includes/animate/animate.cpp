@@ -20,7 +20,9 @@ const vector<string> errorMsg = {   "No Error",
                                     "Error: Missing rightparen",
                                     "Error: Invalid function name2",
                                     "Error: Invalid trig Input",
-                                    "Error: Invalid log Input" };
+                                    "Error: Invalid log Input" ,
+                                    "Error: invalid Input in domain",
+                                    "Error: Upper bound should not be lower than lower bound"};
 
 
 
@@ -480,7 +482,7 @@ void animate::processEvents()
                 int rowNum;
                 sidebar[SB_MOUSE_CLICKED] = "LEFT CLICK " + mouse_pos_string(window);
                 inputUID = scanOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
-                cout << mousePos.x << ", " << mousePos.y << endl;
+                //cout << mousePos.x << ", " << mousePos.y << endl;
                 switch(inputUID){
                     case 1:                 //sidebar
                         cout << "clicked sidebar:";
@@ -697,7 +699,7 @@ string mouse_pos_string(sf::RenderWindow &window)
 //2 = only zoom y
 void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mouse_delta, int axis){
     //the zoom rate depend on the ratio of the screen
-    double zoomFractY;
+    double zoomFractY;                  //how many coordinate to change for Y 
     double zoomFractX;
     if((_info->range.y - _info->range.x) > (_info->domain.y - _info->domain.x)){
         zoomFractY = (_info->domain.y - _info->domain.x) / 50.0;
@@ -770,8 +772,6 @@ void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mou
         _info->domain.y -= xratio2 * zoomFractX * Zoom;
         _info->range.x += yratio2 * zoomFractY * Zoom;
         _info->range.y -= yratio1 * zoomFractY * Zoom;
-        //assert((_info->domain.y - _info->domain.x) > 0);
-        //assert((_info->range.y - _info->range.x) > 0);
     }
 
 

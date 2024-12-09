@@ -107,7 +107,21 @@ int rpnException(Stack<Token*> int_stack, bool invert){
 
 
 
+int DomainException(int domainFlag){
+    if(domainFlag == 1){
+        return 14;
+    }
+    return 0;
+}
 
+
+
+
+int DomainException(double low, double high){
+    if(high <= low)
+        return 15;
+    return 0;
+}
 
 
 

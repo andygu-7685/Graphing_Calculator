@@ -38,6 +38,10 @@ int logException(double inputVal);
 int parenException(int ctr);
 
 
+int DomainException(int domainFlag);
+
+int DomainException(double low, double high);
+
 
 
 

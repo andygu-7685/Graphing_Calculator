@@ -13,8 +13,8 @@ const double COLLISION_COEF = 0.02;
 const double PANINC = 1;                    //how much to pan in plotting coordinate
 const double ZOOMRATE = 2;                  //how much to zoom in plotting coordinate
 const double MIN_RANGE = 0.01;                 //smallest range for the graph 
-const double POLAR_RENDER_H = 4*pi;
-const double POLAR_RENDER_L = -4*pi;
+extern double POLAR_RENDER_H;
+extern double POLAR_RENDER_L;
 
 const float SCREEN_WIDTH = 1400;
 const float SCREEN_HEIGHT = 800;

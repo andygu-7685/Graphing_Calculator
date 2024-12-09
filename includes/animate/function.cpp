@@ -1,7 +1,7 @@
 #include "function.h"
 
 
-void ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack){
+double ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack){
   int currentDigit = 0;
   double tempNum = 0;
   if(!digitStack.empty()){
@@ -17,7 +17,9 @@ void ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack){
         }
       }
       finalStack.push(new Integer(tempNum));
+      return tempNum;
   }
+  return 0;
 }
 
 
@@ -98,6 +100,13 @@ int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string
 
 
 
+
+
+
+
+
+
+
 //return an errorFlag
 //cmd: if 0-9 indicate function #
 //     if -1 mean no outer function
@@ -111,6 +120,8 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& er
     Stack<char> digitStack;
     Queue<char> charQueue;
     Queue<Token*> finalQueue;
+    int setDomain = 0;        //
+    bool negateDomain = false;
 
     for(int i = 0; i < inputStr.length(); i++){
       strStop = true;
@@ -120,14 +131,25 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& er
         case '*':
         case '/':
         case '^':
-          ConvertDigit(digitStack, finalQueue);
-          opStr = inputStr.substr(i, 1);
-          finalQueue.push(new Operator(opStr));
+          if(setDomain == 1 && inputStr[i] == '-'){
+              negateDomain = !negateDomain;
+          }
+          else{
+            errorFlag = DomainException(setDomain);
+            if(errorFlag != 0){ return Queue<Token*>(); }
+            ConvertDigit(digitStack, finalQueue);
+            opStr = inputStr.substr(i, 1);
+            finalQueue.push(new Operator(opStr));
+          }
           break;
         case ' ':
-          ConvertDigit(digitStack, finalQueue);
+          if(setDomain != 1){
+            ConvertDigit(digitStack, finalQueue);
+          }
           break;
         case '(':
+          errorFlag = DomainException(setDomain);
+          if(errorFlag != 0){ return Queue<Token*>(); }
           ConvertDigit(digitStack, finalQueue);
           inFn = false;
           inCmp = 2;
@@ -141,11 +163,15 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& er
           finalQueue.push(new LeftParen());
           break;
         case ')':
+          errorFlag = DomainException(setDomain);
+          if(errorFlag != 0){ return Queue<Token*>(); }
           ConvertDigit(digitStack, finalQueue);
           finalQueue.push(new RightParen());
           break;
         case 'X':
         case 'x':
+          errorFlag = DomainException(setDomain);
+          if(errorFlag != 0){ return Queue<Token*>(); }
           if(inCmp == 1){
             charQueue.push(inputStr[i]);
             strStop = false;
@@ -155,7 +181,17 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& er
           }
           break;
         case ',':
-          if(inCmp == 2){
+          if(setDomain == 1){
+              Queue<Token*> temp;
+              if(negateDomain){
+                  POLAR_RENDER_L = -ConvertDigit(digitStack, temp);
+                  negateDomain = !negateDomain;
+              }
+              else{
+                  POLAR_RENDER_L = ConvertDigit(digitStack, temp);
+              }
+          }
+          else if(inCmp == 2){
               ConvertDigit(digitStack, finalQueue);
               inCmp = 0;
           }
@@ -164,7 +200,33 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& er
               inLog = 0;
           }
           break;
+        case '{':
+          ConvertDigit(digitStack, finalQueue);
+          errorFlag = ConvertChar(charQueue, finalQueue, fnLst, cmd);     //detect trig & function
+          if(errorFlag != 0){ return Queue<Token*>(); }
+
+          errorFlag = DomainException(setDomain);
+          if(errorFlag != 0){ return Queue<Token*>(); }
+          setDomain = 1;
+          break;
+        case '}':
+          if(setDomain == 1){
+              Queue<Token*> temp;
+              if(negateDomain){
+                  POLAR_RENDER_H = -ConvertDigit(digitStack, temp);
+                  negateDomain = !negateDomain;
+              }
+              else{
+                  POLAR_RENDER_H = ConvertDigit(digitStack, temp);
+              }
+              setDomain = 0;
+              errorFlag = DomainException(POLAR_RENDER_L, POLAR_RENDER_H);
+              if(errorFlag != 0){ return Queue<Token*>(); }
+          }
+          break;
         case ':':
+          errorFlag = DomainException(setDomain);
+          if(errorFlag != 0){ return Queue<Token*>(); }
           if(inFn){
               inCmp = 0;
               inLog = 0;
@@ -176,21 +238,31 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& er
           }
           break;
         case '>':
+            errorFlag = DomainException(setDomain);
+            if(errorFlag != 0){ return Queue<Token*>(); }
             i += 4;     //skip 4 char after
           break;
         default:
           if((inputStr[i] - '0' < 10 && inputStr[i] - '0' >= 0 && !inFn) || inputStr[i] == '.'){
             digitStack.push(inputStr[i]);
             break;
-          }
-          if(inputStr[i] == 'F' || inputStr[i] == 'f')
+          }            
+
+          errorFlag = DomainException(setDomain);
+          if(errorFlag != 0){ return Queue<Token*>(); }
+
+          if(inputStr[i] == 'F' || inputStr[i] == 'f'){
             inFn = true;
-          if(inputStr[i] == 'M' || inputStr[i] == 'm')
+          }
+          if(inputStr[i] == 'M' || inputStr[i] == 'm'){
             inCmp = 1;
-          if(inputStr[i] == 'L' || inputStr[i] == 'l')
+          }
+          if(inputStr[i] == 'L' || inputStr[i] == 'l'){
             inLog = 1;
-          if(inputStr[i] == 'n' && inLog == 1)
+          }
+          if(inputStr[i] == 'n' && inLog == 1){
             inLog = 2;                          //for natural log
+          }
           charQueue.push(inputStr[i]);
           strStop = false;
           break;
@@ -200,9 +272,17 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& er
         if(errorFlag != 0){ return Queue<Token*>(); }
       }
     }
-    ConvertDigit(digitStack, finalQueue);
-    errorFlag = ConvertChar(charQueue, finalQueue, fnLst, cmd);
-    if(errorFlag != 0){ return Queue<Token*>(); }
+
+
+    if(setDomain == 1){
+      Queue<Token*> temp;
+      POLAR_RENDER_H = ConvertDigit(digitStack, temp);
+    }
+    else{
+      ConvertDigit(digitStack, finalQueue);
+      errorFlag = ConvertChar(charQueue, finalQueue, fnLst, cmd);
+      if(errorFlag != 0){ return Queue<Token*>(); }
+    }
     return finalQueue;
 }
 
@@ -291,6 +371,7 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
         Stack<Token*> op_stack;
         int parenCtr = 0;
         bool afterParen = false;      //test if the operand is right after a parenthesis
+        bool negateFlag = false;
 
         while(!input_q.empty()){
             Token* walker = input_q.pop();
@@ -299,6 +380,10 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
                 
             if(walker->get_type() == 1 || walker->get_type() == 3 ){
                 total_queue.push(walker);
+                if(negateFlag){
+                  total_queue.push(op_stack.pop());
+                  negateFlag = false;
+                }
                 afterParen = false;
             }
             else if(walker->get_type() == 2){
@@ -308,8 +393,10 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
                     prevOp = op_stack.pop();
 
                     //if negate operator
-                    if(walker->get_op() == '-' && afterParen)
+                    if(walker->get_op() == '-' && afterParen){
                         total_queue.push(new Integer(0.0));
+                        negateFlag = true;
+                    }
 
                     while((walker->get_prec() <= prevOp->get_prec()) && (!op_stack.empty())){
                         total_queue.push(prevOp);
@@ -320,8 +407,10 @@ Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag){
                     op_stack.push(walker);
                 }
                 else{
-                  if(walker->get_op() == '-' && total_queue.empty())
+                  if(walker->get_op() == '-' && total_queue.empty()){
                     total_queue.push(new Integer(0.0));
+                    negateFlag = true;
+                  }
                   op_stack.push(walker);
                 }
                 afterParen = false;

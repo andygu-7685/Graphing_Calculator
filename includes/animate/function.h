@@ -21,7 +21,7 @@
 
 
 
-void ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack);
+double ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack);
 
 int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string> fnLst, int cmd);
 
