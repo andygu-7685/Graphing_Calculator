@@ -29,7 +29,7 @@ graph::graph(graph_info* _infoIn){
 
     if (!font.loadFromFile("arial.ttf"))
     {
-        cout << "animate() CTOR: Font failed to load" << endl;
+        cout << "graph() CTOR: Font failed to load" << endl;
         cin.get();
         exit(-1);
     }

@@ -19,7 +19,7 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, fl
     rect.setFillColor(sf::Color(105, 105, 105)); //(192,192,192)); //silver
     rect.setPosition(sf::Vector2f(left, top));
     rect.setSize(sf::Vector2f(width, height));
-    cout << "Sidebar CTOR: about to load font." << endl;
+    cout << "Sidebar CTOR: about to load font (marker)." << endl;
 
     ////- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // the font file must be in the "working directory"
@@ -93,7 +93,7 @@ void Sidebar::draw(sf::RenderWindow &window)
     for (vector<string>::iterator it = items.begin();
          it != items.end(); it++)
     {
-        sb_text.setColor(lineColors[it - items.begin()]);
+        //sb_text.setColor(lineColors[it - items.begin()]);
         bool blank = false;
         if (it->length() == 0)
         {

@@ -41,19 +41,19 @@ vector<sf::Vector2f> plot::operator()(){
     if(_info->Gmode == 1){
         for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += 0.05){
             if(i != 0){
-                sf::Vector2f coord = get_polar(i);
+                sf::Vector2f coord0 = get_polar(i);
                 if(errorFlag != 0){
                     points = vector<sf::Vector2f>();
                     points.push_back(sf::Vector2f(0,0));
                     return points;
                 }
-                coord = sf::Vector2f(coord.y * cos(coord.x), coord.y * sin(coord.x));
-                coord = T(coord);
-                points.push_back(coord);
+                coord0 = sf::Vector2f(coord0.y * cos(coord0.x), coord0.y * sin(coord0.x));
+                coord0 = T(coord0);
+                points.push_back(coord0);
             }
         }
     }
-    else{
+    else if(_info->Gmode == 0 || _info->Gmode == 2){
         for(double i = _info->domain.x; i < _info->domain.y; i += 0.05){
             if(i != 0){
                 sf::Vector2f coord1 = get_xy(i);
@@ -75,8 +75,20 @@ vector<sf::Vector2f> plot::operator()(){
             }
         }
     }
+    else{
+        for(double i = 0; i < _info->ArduinoIn.size(); i++){
+            sf::Vector2f coord3 = _info->ArduinoIn[i];
+            coord3 = T(coord3);
+            if(coord3.x > 0.0 && coord3.x < _info->dimensions.x)
+                points.push_back(coord3);
+        }
+        if(points.empty())
+            points.push_back(sf::Vector2f(0,0));
+    }
+
     if(_info->Gmode == 2)
         return derivativePts;
+
     return points;
 }
 

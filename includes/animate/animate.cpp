@@ -63,7 +63,6 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
 
 
 
-
     //initialize private variable
     inputStr = "";
     cursorPos = 0;
@@ -74,6 +73,9 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
     INB_Hidden = true;
     FN_Hidden = true;
     errorFlag = 0;
+
+
+
     _info = new graph_info( inputStr, 
                             sf::Vector2f(SCREEN_WIDTH - SIDEB_W, SCREEN_HEIGHT), 
                             sf::Vector2f((SCREEN_WIDTH - SIDEB_W) / 2.0 , SCREEN_HEIGHT / 2.0),
@@ -90,10 +92,25 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
 
 
 
+    //initalize arduino file reading pos and time
+    ArdTime = 0;
+    ifstream fin("ArduinoData.txt");
+    if(fin.fail()){
+        cout << "could not open file";
+        exit(-1);
+    }
+    ArdDataPos = ios::beg + 2;
+    fin.close();
+
+
+
+
+
     //Load History
     history = LoadHistory(errorFlag);
+    LoadData(errorFlag, ArdDataPos, ArdTime);
     
-
+    
 
 
     cout << "Game CTOR. preparing to load the font." << endl;
@@ -105,7 +122,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
     //  Project->RUN->Working Folder
     //
     // font must be a member of the class.
-    //  Will not work with a local declaration
+    // Will not work with a local declaration
     if (!font.loadFromFile("arial.ttf"))
     {
         cout << "animate() CTOR: Font failed to load" << endl;
@@ -179,7 +196,7 @@ void animate::Draw()
 
     // drawing Test: . . . . . . . . . . . .
     // This is how you draw text:)
-    window.draw(myTextLabel);
+    //window.draw(myTextLabel);
     //. . . . . . . . . . . . . . . . . . .
 }
 
@@ -190,6 +207,12 @@ void animate::Draw()
 void animate::update()
 {
     // cause changes to the data for the next frame
+    int ArdStore = ArdTime;
+    LoadData(errorFlag, ArdDataPos, ArdTime);
+    if(ArdStore != ArdTime)             //update graph every time new data introduced
+        command = 10;
+
+    
     system.Step(command);
     command = 0;
     
@@ -259,6 +282,11 @@ void animate::update()
         }
         cursorToggle++;
         inputbar[1] = displayStr;
+
+
+
+
+
 
         //update error label
         if(system.errorReport() == 11){
@@ -555,23 +583,21 @@ void animate::processEvents()
                             historyIn.close();
                         }
                         else if(rowNum == ST_MODE){
-                            if(_info->Gmode == 1){
-                                
-                                _info->Gmode++;
-                            }
-                            else{
-                                _info->Gmode++;
-                            }
-                            if(_info->Gmode >= 3)
+                            _info->Gmode++;
+                            if(_info->Gmode >= 4)
                                 _info->Gmode = 0;
+                        
                             if(_info->Gmode == 0){
                                 settingbar[ST_MODE] = "CARTESIAN";
                             }
                             else if(_info->Gmode == 1){
                                 settingbar[ST_MODE] = "POLAR";
                             }
-                            else{
+                            else if(_info->Gmode == 2){
                                 settingbar[ST_MODE] = "DERIVATIVE";
+                            }
+                            else{
+                                settingbar[ST_MODE] = "ARDUINO";
                             }
                             system.set_info(_info);
                             command = 2;
@@ -806,7 +832,8 @@ void clearfile(const string& fileName, const string& baseStr){
         cout << "Error deleting file";
     }
 
-    ofstream fout("C:/Users/agu4/99_00_final_project-andygu-7685/temp.txt", ios::app);
+    //PATH: "C:/Users/agu4/99_00_final_project-andygu-7685/temp.txt"
+    ofstream fout("temp.txt", ios::app);
     fout << baseStr << "\n";
     fout.close();
 
@@ -827,7 +854,7 @@ vector<string> animate::LoadHistory(int& errorFlag){
 
     if(fin.fail()){
         cout << "could not open file";
-        errorFlag = 10;
+        exit(-1);
     }
 
     getline(fin, metaData);
@@ -853,6 +880,45 @@ vector<string> animate::LoadHistory(int& errorFlag){
     fin.close();
     return history;
 }
+
+
+
+
+vector<sf::Vector2f> animate::LoadData(int& errorFlag, streampos& lastImport, double& lastTime){
+    string metaData, holder, singleImport;
+    ifstream fin("ArduinoData.txt");
+
+    if(fin.fail()){
+        cout << "could not open file";
+        exit(-1);
+    }
+
+    getline(fin, metaData);
+    fin.seekg(lastImport - 2);
+    getline(fin, holder);
+    
+
+
+    if(metaData == "Base:FileState:Arduino:"){
+        while(getline(fin, singleImport)){
+            _info->ArduinoIn.push_back(sf::Vector2f(lastTime , stof(singleImport)));
+            lastTime += 1;
+        }
+        fin.clear();
+    }
+
+    lastImport = fin.tellg();
+    fin.close();
+
+    // if(_info->ArduinoIn.size() == 0){
+    //     _info->ArduinoIn.push_back(sf::Vector2f(0, 0));
+    // }
+
+    return _info->ArduinoIn;
+}
+
+
+
 
 
 

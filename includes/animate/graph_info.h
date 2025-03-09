@@ -17,6 +17,7 @@ using namespace std;
 struct graph_info {
     string equation;
     vector<string> equLst = {" ", " ", " ", " ", " ", " ", " ", " ", " ", " "};
+    vector<sf::Vector2f> ArduinoIn;
     sf::Vector2f dimensions;
     sf::Vector2f origin;
     sf::Vector2f scale;

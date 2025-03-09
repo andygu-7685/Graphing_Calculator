@@ -30,6 +30,7 @@ public:
     void Draw();
     int scanOverlap(sf::Vector2f testPos);
     vector<string> LoadHistory(int& errorFlag);
+    vector<sf::Vector2f> LoadData(int& errorFlag, streampos& lastImport, double& lastTime);
 
 private:
     sf::RenderWindow window;
@@ -55,6 +56,8 @@ private:
     int cursorPos;
     int cursorToggle;                   //keep track of cursor blank
     bool INB_Hidden;                    //true if hidden, false if show
+    double ArdTime;                     //time for arduino data
+    streampos ArdDataPos;                  //file reading location
     bool FN_Hidden;
     sf::Vector2f dragStart;
 };

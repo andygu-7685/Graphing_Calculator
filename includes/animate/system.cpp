@@ -29,6 +29,7 @@ System::System()
 
 System::System(graph_info* _infoIn)
 {
+    
     _info = _infoIn;
     setNum = 1;
     _g = graph(_infoIn);
@@ -61,6 +62,7 @@ void System::Step(int& command)
         case 7:
         case 8:
         case 9:
+        case 10:
                 //if(_info->Gmode == 0 || _info->Gmode == 1){
                     _g.calc_plot(1);
                     errorFlag = _g.errorReport();
