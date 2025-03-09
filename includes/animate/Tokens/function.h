@@ -14,9 +14,9 @@
 #include "variable.h"
 #include "trig.h"
 #include "logarithm.h"
-#include "MyQueue.h"
-#include "MyStack.h"
-#include "exception.h"
+#include "..\Tools\MyQueue.h"
+#include "..\Tools\MyStack.h"
+#include "..\exception.h"
 #include "compare.h"
 
 

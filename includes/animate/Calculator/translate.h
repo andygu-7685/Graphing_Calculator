@@ -4,14 +4,14 @@
 #include <string>
 #include <vector>
 #include "graph_info.h"
-#include "MyQueue.h"
-#include "MyStack.h"
-#include "operator.h"
-#include "integer.h"
-#include "leftparen.h"
-#include "rightparen.h"
-#include "variable.h"
-#include "trig.h"
+#include "..\Tools\MyQueue.h"
+#include "..\Tools\MyStack.h"
+#include "..\Tokens\operator.h"
+#include "..\Tokens\integer.h"
+#include "..\Tokens\leftparen.h"
+#include "..\Tokens\rightparen.h"
+#include "..\Tokens\variable.h"
+#include "..\Tokens\trig.h"
 
 
 

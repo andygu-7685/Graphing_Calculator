@@ -5,7 +5,7 @@
 #include <cmath>
 #include <vector>
 #include "random.h"
-#include "constants.h"
+#include "..\constants.h"
 
 using namespace std;
 

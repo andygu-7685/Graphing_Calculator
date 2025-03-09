@@ -9,8 +9,8 @@
 #include <stdexcept>
 #include <string>
 #include "constants.h"
-#include "MyStack.h"
-#include "Token.h"
+#include ".\Tools\MyStack.h"
+#include ".\Tokens\Token.h"
 
 
 using namespace std;

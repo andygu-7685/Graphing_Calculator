@@ -1,9 +1,7 @@
 #include "animate.h"
-#include "constants.h"
 #include <iostream>
 
 using namespace std;
-#include "system.h"
 
 
 

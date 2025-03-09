@@ -6,7 +6,7 @@
 #include "graph_info.h"
 #include "plot.h"
 #include "translate.h"
-#include "constants.h"
+#include "..\constants.h"
 
 
 

@@ -9,7 +9,7 @@
 
 #include "token.h"
 #include "operator.h"
-#include "exception.h"
+#include "..\exception.h"
 
 
 

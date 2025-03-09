@@ -9,14 +9,14 @@
 #include <fstream> 
 #include <cstdlib>
 #include <cstdio>
-#include "system.h"
-#include "sidebar.h"
+#include ".\Calculator\system.h"
+#include ".\Calculator\sidebar.h"
 
-#include "graph_info.h"
-#include "rpn.h"
-#include "shunting_yard.h"
+#include ".\Calculator\graph_info.h"
+#include ".\Parser\rpn.h"
+#include ".\Parser\shunting_yard.h"
 
-
+#include "constants.h"
 
 
 class animate{

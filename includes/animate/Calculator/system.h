@@ -2,7 +2,10 @@
 #define SYSTEM_H
 #include <vector>
 #include <SFML/Graphics.hpp>
-#include "particle.h"
+#include "..\Tools\particle.h"
+#include "..\Tools\random.h"
+#include "..\constants.h"
+#include "graph_info.h"
 #include "graph.h"
 
 using namespace std;
