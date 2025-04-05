@@ -1,25 +1,10 @@
 #include "compare.h"
 
-
-
-
-
-compare::compare(): Operator("C"){}
-
-compare::compare(bool type): Operator("C"){
-    cmpType = type;
-}
-
+compare::compare(bool type): Operator("C"), _type(type){}
 
 double compare::evaluate(double op1, double op2){
-    if(cmpType){
-        if(op1 > op2)
-            return op1;
-        return op2;
-    }
-    else{
-        if(op1 > op2)
-            return op2;
-        return op1;
-    }
+    if(_type)
+        return (op1 > op2) ? op1 : op2;
+    else
+        return (op1 > op2) ? op2 : op1;
 }

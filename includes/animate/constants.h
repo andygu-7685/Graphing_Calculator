@@ -7,6 +7,8 @@ using namespace std;
 
 const double pi = 3.1415926;
 const double e = 2.7182818;
+const double _EPSILON = 0.00000000000001;
+
 const double FRICTION_COEF = 0.004;
 const double GRAVITY = 0.02;
 const double COLLISION_COEF = 0.02;

@@ -60,10 +60,6 @@
         cout << "Token set_base function excuted";
     }
 
-    int Token::errorReport(){
-        cout << "Token error Report function excuted";
-        return 0;
-    }
 
 
 

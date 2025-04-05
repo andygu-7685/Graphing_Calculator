@@ -4,6 +4,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 int FunctionException(vector<string> fnLst, int fnIndex, int outerfn){
     try{
         if(fnIndex >= 10 || fnIndex < 0)
@@ -52,25 +62,26 @@ int InputException(){
 
 
 
-int divideException(double inputVal, char _op){
+void divideException(double inputVal, char _op){
     if(inputVal == 0.0 && _op == '/')
-        return 9;
-    return 0;
+        throw MyException(divideE, "Error: divde operator cannot divide by 0");
 }
 
 
+void trigException1(double inputVal){
+    if(fmod(inputVal, pi) == 0.0)
+        throw MyException(trigE1, "Error: cot evaluate to undefined");
+}
 
-int trigException(double inputVal){
-    if(inputVal == 0)
-        return 12;
-    return 0;
+void trigException2(double inputVal){
+    if(dequ(fmod(inputVal, pi), pi/2.0))
+        throw MyException(trigE2, "Error: tan evaluate to undefined");
 }
 
 
-int logException(double inputVal){
+void logException(double inputVal){
     if(inputVal == 0 || inputVal == 1)
-        return 13;
-    return 0;
+        throw MyException(logE, "Error: log base cannot be 0 or 1");
 }
 
 

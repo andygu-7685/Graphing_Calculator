@@ -1,44 +1,22 @@
 #ifndef LOGARITHM_H
 #define LOGARITHM_H
 
-
-
-
-
-
-
-#include "token.h"
 #include "operator.h"
 #include "..\exception.h"
 
-
-
 class Logarithm : public Operator{
     public:
-
-    Logarithm();
-
-    Logarithm(double base, bool LN);
+    //must be this default arg b/c of the parsing algorithm
+    Logarithm(double base = 1, bool logType = false);
 
     double evaluate(double uniInput) override;
-    bool get_ln()const override { 
-        return _logType; 
-    }
-    void set_base(double input) override{ 
-        _base = input; 
-    }
-    int errorReport() override;
+
+    void set_base(double input) override{ _base = input; }
+
+    bool get_ln()const override { return _logType; }
 
     private:
     double _base;               //base of log
-    int errorFlag;
     bool _logType;              //true if ln(), false if log()
-
-
 };
-
-
-
-
-
 #endif

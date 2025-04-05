@@ -2,3 +2,16 @@ Base:FileState:Data:
 x^sin(x)
 x^sin(x)
 x^sin(x)
+ x^sin(x)
+ 2*x+f0(x)
+Base:FileState:Functions:
+ x^sin(x)
+ 2*x+f0(x)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

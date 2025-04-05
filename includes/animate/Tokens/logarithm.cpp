@@ -1,30 +1,13 @@
 #include "logarithm.h"
 
-
-
-
-
-
-
-Logarithm::Logarithm() : Operator("L"){
-    _logType = false;
-    _base = 1;
-    errorFlag = 0;
-}
-
-Logarithm::Logarithm(double base, bool LN) : Operator("L"){
-    _logType = LN;
-    _base = base;
-    errorFlag = 0;
-}
+Logarithm::Logarithm(double base, bool logType) : Operator("L"), _logType(logType), _base(base){}
 
 double Logarithm::evaluate(double uniInput){
-    errorFlag = logException(uniInput);
-    if(errorFlag != 0){ return 0.0; }
+    try{
+        logException(_base);
+    }
+    catch(const MyException e){
+        throw;
+    }
     return (log(uniInput) / log(_base));
-}
-
-
-int Logarithm::errorReport(){
-    return errorFlag;
 }

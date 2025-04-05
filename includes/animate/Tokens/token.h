@@ -29,9 +29,7 @@ class Token{
     public:
 
     Token();
-
     Token(int typeIn);
-
 
     friend ostream& operator<<(ostream& outs, const Token& rhs){
         switch(rhs.type){
@@ -55,25 +53,18 @@ class Token{
     }
 
     virtual double evaluate(double left, double right);
-
     virtual double evaluate(double uniInput);
-
     virtual double evaluate();
 
     virtual double get_int() const ;
     virtual char get_op()const ;
     virtual char get_name()const ;
     virtual int get_prec()const ;
-
     virtual string get_trig()const ;
     virtual bool get_ln()const;
-    virtual void set_base(double input);
-
-    virtual int errorReport();
-
     int get_type() const{ return type; }
 
-
+    virtual void set_base(double input);
 
     private:
     int type;
