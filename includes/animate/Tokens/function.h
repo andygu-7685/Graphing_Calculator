@@ -14,6 +14,7 @@
 #include "rightbracket.h"
 #include "..\Tools\MyQueue.h"
 #include "..\Tools\MyStack.h"
+#include "..\constants.h"
 #include "..\exception.h"
 #include <algorithm> 
 

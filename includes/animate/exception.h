@@ -7,12 +7,13 @@
 
 using namespace std;
 
-enum ecodes {fnE1, fnE2, fnE3, defE, defineE, syE, rpnE1, rpnE2, inputE, divideE, trigE1, trigE2, logE, parenE, DomainE1, DomainE2, CommaE};
+enum ecodes {fnE1, fnE2, fnE3, defE, defineE, syE, rpnE1, rpnE2, inputE, divideE, trigE1, trigE2, logE, parenE, DomainE1, DomainE2, CommaE, DefFlag = 100};
 
 bool dequ(double left, double right, double epsilon = 0.00000000001);
 
 class MyException : public exception{
     public:
+    MyException() : _code(-1), _msg("default"){}
     MyException(int ecode, string msg) : _code(ecode), _msg(msg){}
     int code() const{ return _code; }
     const char* what() const noexcept override { return _msg.c_str(); }
@@ -21,9 +22,6 @@ class MyException : public exception{
     int _code;
     string _msg;
 };
-
-
-
 
 
 
@@ -56,15 +54,5 @@ void DomainException1(int domainFlag);
 void DomainException2(int domainFlag);
 
 void DomainException3(double low, double high);
-
-
-
-
-
-
-
-
-
-
 
 #endif

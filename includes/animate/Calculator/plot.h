@@ -17,40 +17,21 @@
 #include "translate.h"
 #include "..\exception.h"
 
-
-
-
 class plot{
     public:
-    
     plot(){}
-
-
     plot(graph_info* _infoIn);
+
     void set_info(graph_info* _infoIn);
-
-
-    vector<sf::Vector2f> operator()();
-
-
+    vector<sf::Vector2f> operator()(int mode = -1);
     sf::Vector2f get_xy(double input_x);
-
     sf::Vector2f get_polar(double input_x);
-
-    vector<sf::Vector2f> get_derivative();
-
-    int errorReport(){ return errorFlag; }
-
-    void points_allo();
-
 
     private:
     graph_info* _info;
     vector<sf::Vector2f> points;
-    vector<sf::Vector2f> derivativePts;
     Queue<Token*> postfix;
     translate T;
-    int errorFlag;
 
 };
 

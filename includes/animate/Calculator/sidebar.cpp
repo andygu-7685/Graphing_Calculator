@@ -1,9 +1,5 @@
 #include "sidebar.h"
 
-
-
-
-
 Sidebar::Sidebar(){}
 
 Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, float vertSpace, float margin) 
@@ -57,13 +53,11 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, fl
 
     items.push_back("ST");
     // Fill the items vector with empty strings so that we can use [] to read them:
-    for (int i = 0; i < 30; i++)
-    {
+    for (int i = 0; i < 30; i++){
         items.push_back("");
     }
     cout << "Sidebar: CTOR: Exit." << endl;
 }
-
 
 //1 = top left
 //2 = top right
@@ -81,9 +75,6 @@ sf::Vector2f Sidebar::getPt(int corner){
         return sf::Vector2f(_left, _top + _height);
     return sf::Vector2f();
 }
-
-
-
 
 void Sidebar::draw(sf::RenderWindow &window)
 {
@@ -113,7 +104,6 @@ void Sidebar::draw(sf::RenderWindow &window)
     }
 }
 
-
 int Sidebar::overlapText(sf::Vector2f testPos){
     float height = _top + VERTICAL_LINE_SPACING;
 
@@ -136,13 +126,13 @@ int Sidebar::overlapText(sf::Vector2f testPos){
     return -1;
 }
 
+bool Sidebar::overlap(sf::Vector2f testPos){
+    sf::Vector2f boxPt1 = getPt(1);
+    sf::Vector2f boxPt2 = getPt(3);
+    return (testPos.x > boxPt1.x && testPos.x < boxPt2.x && testPos.y > boxPt1.y && testPos.y < boxPt2.y);
+}
 
-
-
-
-
-
-float Sidebar::TextX(int lineNum){
+float Sidebar::TextY(int lineNum){
     float height = _top + VERTICAL_LINE_SPACING;    
 
     for (vector<string>::iterator it = items.begin(); it != items.end(); it++)
@@ -161,20 +151,6 @@ float Sidebar::TextX(int lineNum){
     return -1;
 }
 
-
-
-bool Sidebar::overlap(sf::Vector2f testPos){
-    sf::Vector2f boxPt1 = getPt(1);
-    sf::Vector2f boxPt2 = getPt(3);
-    return (testPos.x > boxPt1.x && testPos.x < boxPt2.x && testPos.y > boxPt1.y && testPos.y < boxPt2.y);
-}
-
-
-
-void Sidebar::setColor(sf::Color inputColor){
-    rect.setFillColor(inputColor);
-}
-
 float Sidebar::TextH(int lineNum){
     vector<string>::iterator it = items.begin() + lineNum;
     sb_text.setString(it->c_str());
@@ -182,7 +158,9 @@ float Sidebar::TextH(int lineNum){
     return retVal;
 }
 
-
+void Sidebar::setColor(sf::Color inputColor){
+    rect.setFillColor(inputColor);
+}
 
 void Sidebar::setAll( float left, float top, float width, float height){
     _top = top;
@@ -192,8 +170,6 @@ void Sidebar::setAll( float left, float top, float width, float height){
     rect.setPosition(sf::Vector2f(_left, _top));
     rect.setSize(sf::Vector2f(_width, _height));
 }
-
-
 
 string& Sidebar::operator[](int index)
 {

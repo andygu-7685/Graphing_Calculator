@@ -85,7 +85,7 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd){
             //make sure it does not circular define and have correct name, 
             //all other error case are handed after throw
             DefinitionException(fnLst, inputStr.substr(i + 3), inputStr[i + 1] - '0');
-            throw MyException(100, "Function Definition Carry");
+            throw MyException(DefFlag, "Function Definition Carry");
           }
           else{
             InputException();
@@ -155,7 +155,7 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd){
   return finalQueue;
 }
 
-//Working
+//Finished
 double rpnAlgorithm( Queue<Token*> input_q, double fnInput ){
     Stack<Token*> int_stack;
     while(!input_q.empty()){

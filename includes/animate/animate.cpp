@@ -30,6 +30,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, 1),
                      inputbar(INB_X, INB_Y, INB_W, INB_H, 2), 
                      settingbar(SETB_X, SETB_Y, SETB_W, SETB_H, 3)
 {
+    //create individual fn bar
     for(int i = SB_HISTORY; i < 14; i++){
         Sidebar* linePtr = new Sidebar(SIDEB_X, 0,  10.0, 10.0 , i, -1.0);
         linePtr->setColor(sf::Color(60, 64, 59));
@@ -166,12 +167,11 @@ void animate::Draw()
         }
     }
 
-
     if (mouseIn)
         window.draw(mousePoint);
 
 
-
+    //display delete button
     if(!sidebarMode){
         int lineNum = SB_HISTORY;
         sf::Text deleteButton("X", font);
@@ -180,7 +180,7 @@ void animate::Draw()
         vector<string> fnLstDup = _info->equLst;
         while(lineNum < SB_HISTORY_END && !fnLstDup.empty()){
             if(fnLstDup[0] != " "){
-                deleteButton.setPosition(sf::Vector2f(SCREEN_WIDTH - 20, sidebar.TextX(lineNum)));
+                deleteButton.setPosition(sf::Vector2f(SCREEN_WIDTH - 20, sidebar.TextY(lineNum)));
                 window.draw(deleteButton);
             }
             fnLstDup.erase(fnLstDup.begin());
@@ -258,7 +258,7 @@ void animate::update()
             }
 
             for(int i = 0; i < 10; i++){
-                float TextBoxY = sidebar.TextX(i + SB_HISTORY);
+                float TextBoxY = sidebar.TextY(i + SB_HISTORY);
                 float TextBoxH = sidebar.TextH(i + SB_HISTORY);
                 fnLine[i]->setAll(SIDEB_X + 5.0, TextBoxY, SIDEB_W - 5.0, TextBoxH + 5.0);
             }
@@ -267,7 +267,7 @@ void animate::update()
         
 
 
-
+        //text cursor animation
         string displayStr = inputStr;
         if(cursorToggle > 100){
             cursorToggle = 0;
@@ -287,47 +287,35 @@ void animate::update()
 
 
         //update error label
-        if(system.errorReport() == 11){
+        if(system.error().code() == DefFlag){
             string defStr = inputStr;
-            int defError = 0;               //error flag for function definition
             int fnIndex = defStr[1] - '0';
-
             assert(defStr.size() > 3);         //already debuged
-            Queue<Token*> testPostfix;
-            Queue<Token*> testQueue = strToQueue(defStr.substr(3, defStr.size() - 3), _info->equLst, fnIndex, defError);
-            if(defError == 0){
+
+            try{
+                Queue<Token*> testQueue; 
+                testQueue = strToQueue(defStr.substr(3, defStr.size() - 3), _info->equLst);
                 ShuntingYard sytest(testQueue);
-                testPostfix = sytest.postfix(defError);
-            }
-            if(defError == 0){
-                RPN rpntest(testPostfix);
-                rpntest(defError, 1);
-            }
+                testQueue = sytest.postfix();
+                RPN rpntest(testQueue);
+                rpntest(1);
 
-
-
-            if(defError != 0){
-                inputbar[0] = errorMsg[defError];
-                system.setError(-98);
-            }
-            else{
                 if(fnIndex < 10 && fnIndex >= 0){
                     (_info->equLst)[fnIndex] = defStr.substr(3, defStr.size() - 3);
                     history.push_back(defStr.substr(3, defStr.size() - 3));
-                    system.setError(0);
                     INB_Hidden = !INB_Hidden;
                 }
                 else{
-                    inputbar[0] = errorMsg[system.errorReport()];           //if the name of function defining is invalid
-                    system.setError(-98);
+                    inputbar[0] = system.error().what();           //if the name of function defining is invalid
                 }
             }
+            catch(MyException e){
+                inputbar[0] = e.what();
+            }
+            system.clear();
         }
-        else if(system.errorReport() == -98){
-            //nothing happen
-        }
-        else if(system.errorReport() != 0){
-            inputbar[0] = errorMsg[system.errorReport()];
+        else if(system.error().code() != 0){
+            inputbar[0] = system.error().what();
         }
         else{
             inputbar[0] = "Input equation: "; 
@@ -429,12 +417,12 @@ void animate::processEvents()
                     system.set_info(_info);
                     command = 2;
                     system.Step(command);
-                    if(system.errorReport() == 0){
+                    if(system.error().code() == -1){
                         history.push_back(inputStr);
                         INB_Hidden = !INB_Hidden;
                     }
                     
-                    if(system.errorReport() == 11)
+                    if(system.error().code() == DefFlag)
                         _info->equation = " ";
                 }
                 else if(INB_Hidden){

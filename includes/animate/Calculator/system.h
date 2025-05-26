@@ -7,6 +7,7 @@
 #include "..\constants.h"
 #include "graph_info.h"
 #include "graph.h"
+#include "../exception.h"
 
 using namespace std;
 class System
@@ -17,15 +18,15 @@ public:
     void Step(int& command);
     void Draw(sf::RenderWindow& widnow);
     void set_info(graph_info* _infoIn);
-    int errorReport(){ return errorFlag; }
-    void setError(int inputCode){ errorFlag = inputCode; }
+    MyException error();
+    void clear();
 
 private:
     graph_info* _info;
     graph _g;
     int totalUID;
-    int setNum;
-    int errorFlag;
+    MyException sysException;
+
 };
 
 #endif // SYSTEM_H

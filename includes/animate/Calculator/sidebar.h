@@ -21,7 +21,7 @@ public:
     void draw(sf::RenderWindow& window);
     string& operator [](int index);
     const string operator[](int index) const;
-    float TextX(int lineNum);
+    float TextY(int lineNum);
     float TextH(int lineNum);
     void setColor(sf::Color inputColor);
     void setItems(vector<string> inputV) { items = inputV; }

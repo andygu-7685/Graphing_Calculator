@@ -10,8 +10,10 @@ void plot::set_info(graph_info* _infoIn){
     T.set_info(_info);
 }
 
-vector<sf::Vector2f> plot::operator()(){
+vector<sf::Vector2f> plot::operator()(int mode){
     points = vector<sf::Vector2f>();
+    if(mode == -1)
+        mode = _info->Gmode;
 
     Queue<Token*> infix1 = strToQueue(_info->equation, _info->equLst);
     if(infix1.empty()){
@@ -23,16 +25,7 @@ vector<sf::Vector2f> plot::operator()(){
     ShuntingYard sy1(infix1);
     postfix = sy1.postfix();
 
-    if(_info->Gmode == 1){
-        for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += 0.05){
-            if(i != 0){
-                sf::Vector2f coord0 = get_polar(i);
-                coord0 = T.toPolar(coord0);
-                points.push_back(coord0);
-            }
-        }
-    }
-    else if(_info->Gmode == 0){
+    if(mode == 0){
         for(double i = _info->domain.x; i < _info->domain.y; i += 0.05){
             if(i != 0){
                 sf::Vector2f coord1 = get_xy(i);
@@ -41,7 +34,16 @@ vector<sf::Vector2f> plot::operator()(){
             }
         }
     }
-    else if(_info->Gmode == 2){
+    else if(mode == 1){
+        for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += 0.05){
+            if(i != 0){
+                sf::Vector2f coord0 = get_polar(i);
+                coord0 = T.toPolar(coord0);
+                points.push_back(coord0);
+            }
+        }
+    }
+    else if(mode == 2){
         for(double i = _info->domain.x; i < _info->domain.y; i += 0.05){
             if(i != 0){
                 sf::Vector2f coord1 = get_xy(i);
@@ -52,7 +54,7 @@ vector<sf::Vector2f> plot::operator()(){
                 coord2 = sf::Vector2f((2*i+0.05) / 2.0, slope);
 
                 coord2 = T(coord2);
-                points.push_back(coord1);
+                points.push_back(coord2);
             }
         }
     }

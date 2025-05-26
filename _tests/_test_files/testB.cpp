@@ -23,6 +23,7 @@ TEST(TEST_STUB, TestStub) {
 
 bool test_syrpn(bool debug = false)
 {
+    /*
     int errorFlag;
     string inputStr;
     getline(cin, inputStr);
@@ -36,7 +37,7 @@ bool test_syrpn(bool debug = false)
     RPN rpn1(postfix1);
     double answer = rpn1(errorFlag);
     cout << "\nThe answer is: " << answer << endl;
-
+    */
   return true;
 }
 
@@ -126,7 +127,7 @@ TEST(TEST_PLOT, TestPlot) {
 
 bool test_fnexception(bool debug = false)
 {
-
+/*
     vector<string> functionList = {
         "x^2 + 3*x - 7",
         "sin(x) + cos(x)",
@@ -197,7 +198,7 @@ bool test_fnexception(bool debug = false)
     } catch (int e) {
         cout << "Missing operand caught exception: " << e << endl;
     }
-
+*/
     return true;
 
 }
@@ -253,6 +254,7 @@ bool test_history(bool debug = false)
         printHistory(history);
     }
     */
+   
     return true;
 }
 

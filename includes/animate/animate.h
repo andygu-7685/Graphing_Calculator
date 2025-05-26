@@ -15,6 +15,7 @@
 #include ".\Calculator\graph_info.h"
 #include ".\Parser\rpn.h"
 #include ".\Parser\shunting_yard.h"
+#include "exception.h"
 
 #include "constants.h"
 
