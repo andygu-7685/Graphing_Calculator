@@ -7,57 +7,71 @@
 
 
 
-
-
-
-
-
-
-
-int FunctionException(vector<string> fnLst, int fnIndex, int outerfn){
-    try{
-        if(fnIndex >= 10 || fnIndex < 0)
-            throw 1;             //"Error: Invalid function name."
-        if(fnIndex == outerfn)
-            throw 2;             //"Error: the function should not self reference."
-        if(fnLst[fnIndex] == " ")
-            throw 3;             //"Error: the function you referenced do not exist."
-        if(outerfn <= 0 && outerfn > -10)
-            throw 11;              //for function definition
-        return 0;
-    }
-    catch(int error){ 
-        cout << "error code: " << error << endl;
-        return error;
-    }
-}
-
-
-int DefinitionException(bool isDef){
-    if(isDef)
-        return 11;
-    return 0;
-}
-
-
-
-int syException(Stack<Token*>& op_stack){
-    try{
-        if(op_stack.empty())
-            throw 4;            //"Error: missing leftparen.";
-        return 0;
-    }
-    catch(int error){
-        return error;
-    }
+bool dequ(double left, double right, double epsilon){
+    return fabs(left - right) < epsilon ? true : false;
 }
 
 
 
 
-int InputException(){
-    //always return an error code 8, when input is unk
-    return 8;
+
+
+
+
+
+void FunctionException(const vector<string>& fnLst, int fnIndex, vector<bool> visited) {
+    if(fnIndex > 9 || fnIndex < 0){
+        throw MyException(fnE1, "Error: Invalid function name");
+    }
+    else if (visited[fnIndex]) {
+        // Already visited in the current path => circular reference
+        throw MyException(fnE2, "Error: detected circular definition");
+    }
+    else if(fnLst[fnIndex] == " "){
+        throw MyException(fnE3, "Error: function referenced do not exist");
+    }
+
+    visited[fnIndex] = true;
+    string target = fnLst[fnIndex];
+    int pos = target.find("F");
+
+    while (pos != string::npos) {
+        if ((pos + 2) < target.size() && target[pos + 2] == '(') 
+            FunctionException(fnLst, target[pos + 1] - '0', visited);
+        pos++;
+        pos = target.find("F", pos);
+    }
+}
+
+void DefinitionException(const vector<string>& fnLst, string currentDef, int defIndex) {
+    if(defIndex > 9 || defIndex < 0){
+        throw MyException(defE, "Error: Invalid definition name");
+    }
+    vector<bool> visited = vector<bool>(10, false);
+    visited[defIndex] = true;
+    int pos = currentDef.find("F");
+
+    while (pos != string::npos) {
+        if ((pos + 2) < currentDef.size() && currentDef[pos + 2] == '(')
+            FunctionException(fnLst, currentDef[pos + 1] - '0', visited);
+        pos++;
+        pos = currentDef.find("F", pos);
+    }
+}
+
+
+
+void syException(const Stack<Token*>& op_stack){
+    if(op_stack.empty())
+        throw MyException(syE, "Error: Missing left paren");
+}
+
+
+
+
+void InputException(){
+    //always throw, when input is does not match any keyword
+    throw MyException(inputE, "Error: Unknown Input");
 }
 
 
@@ -69,12 +83,12 @@ void divideException(double inputVal, char _op){
 
 
 void trigException1(double inputVal){
-    if(fmod(inputVal, pi) == 0.0)
+    if(fmod(inputVal, 3.1415926) == 0.0)
         throw MyException(trigE1, "Error: cot evaluate to undefined");
 }
 
 void trigException2(double inputVal){
-    if(dequ(fmod(inputVal, pi), pi/2.0))
+    if(dequ(fmod(inputVal, 3.1415926), 3.1415926/2.0))
         throw MyException(trigE2, "Error: tan evaluate to undefined");
 }
 
@@ -88,54 +102,65 @@ void logException(double inputVal){
 
 
 
+//The must be empty after sy algorithm
+void parenException(const Stack<char>& match){
+    if(!match.empty())
+        throw MyException(parenE, "Error: paren did not match");
+}
 
-int parenException(int ctr){
-    if(ctr != 0)
-        return 10;
-    return 0;
+
+void commaException(const Stack<char>& match){
+    if(match.empty())
+        throw MyException(parenE, "Error: comma did not match");
 }
 
 
 
 
+// void rpnException(Stack<Token*> int_stack, bool invert){
+//         if(!int_stack.empty() && invert == true)
+//             throw 7;                //"Error: int_stack should be empty."
+//         if(int_stack.empty() && invert == false)
+//             throw 6;                 //"Error: missing operand."
+// }
 
+void rpnException1(const Stack<Token*>& int_stack){
+    if(!int_stack.empty())
+        throw MyException(rpnE1, "Error: int_stack should be empty");                //"Error: int_stack should be empty."
+}
 
-
-
-int rpnException(Stack<Token*> int_stack, bool invert){
-    try{
-        if(!int_stack.empty() && invert == true)
-            throw 7;                //"Error: int_stack should be empty."
-        if(int_stack.empty() && invert == false)
-            throw 6;                 //"Error: missing operand."
-        return 0;
-    }
-    catch(int error){
-        return error;
-    }
+void rpnException2(const Stack<Token*>& int_stack){
+    if(int_stack.empty())
+        throw MyException(rpnE2, "Error: missing operand");                 //"Error: missing operand."
 }
 
 
 
 
-int DomainException(int domainFlag){
-    if(domainFlag == 1){
-        return 14;
-    }
-    return 0;
+void DomainException1(int domainFlag){
+    if(domainFlag != 0)
+        throw MyException(DomainE1, "Error: Domain redefinition detected");
+}
+
+void DomainException2(int domainFlag){
+    if(domainFlag != 1)
+        throw MyException(DomainE1, "Error: Missing left bracket");
 }
 
 
 
 
-int DomainException(double low, double high){
+void DomainException3(double low, double high){
     if(high <= low)
-        return 15;
-    return 0;
+        throw MyException(DomainE2, "Error: Upper bound should not be lower than lower bound");
 }
 
 
 
+void commaException(int closest){
+    if(closest == 0)
+        throw MyException(CommaE, "Error: Incomplete argument or domain");
+}
 
 
 

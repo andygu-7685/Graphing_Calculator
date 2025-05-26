@@ -7,7 +7,8 @@
 
 class Operator : public Token{
     public:
-    Operator(string operand);
+    Operator(string operand = " ");
+    Operator(char operand = ' ');
 
     virtual double evaluate(double left, double right) override;
 

@@ -1,17 +1,15 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
-#include "constants.h"
+//#include "constants.h"
 #include ".\Tools\MyStack.h"
 #include ".\Tokens\Token.h"
 
 using namespace std;
 
-enum ecodes {functionE, defineE, syE, rpnE, inputE, divideE, trigE1, trigE2, logE, parenE, DomainE1, DomainE2};
+enum ecodes {fnE1, fnE2, fnE3, defE, defineE, syE, rpnE1, rpnE2, inputE, divideE, trigE1, trigE2, logE, parenE, DomainE1, DomainE2, CommaE};
 
-bool dequ(double left, double right, double epsilon = _EPSILON){
-    return fabs(left - right) < epsilon ? true : false;
-}
+bool dequ(double left, double right, double epsilon = 0.00000000001);
 
 class MyException : public exception{
     public:
@@ -28,15 +26,18 @@ class MyException : public exception{
 
 
 
-int FunctionException(vector<string> fnLst, int fnIndex, int outerfn);
 
-int DefinitionException(bool isDef);
+void FunctionException(const vector<string>& fnLst, int fnIndex, vector<bool> visited = vector<bool>(10, false));
 
-int syException(Stack<Token*>& op_stack);
+void DefinitionException(const vector<string>& fnLst, string currentDef, int defIndex);
 
-int rpnException(Stack<Token *> int_stack, bool invert = false);
+void syException(const Stack<Token*>& op_stack);
 
-int InputException();
+void rpnException1(const Stack<Token *>& int_stack);
+
+void rpnException2(const Stack<Token *>& int_stack);
+
+void InputException();
 
 void divideException(double inputVal, char _op);
 
@@ -46,11 +47,15 @@ void trigException2(double inputVal);
 
 void logException(double inputVal);
 
-int parenException(int ctr);
+void parenException(const Stack<char>& match);
 
-void DomainException(int domainFlag);
+void commaException(const Stack<char>& match);
 
-void DomainException(double low, double high);
+void DomainException1(int domainFlag);
+
+void DomainException2(int domainFlag);
+
+void DomainException3(double low, double high);
 
 
 

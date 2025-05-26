@@ -56,7 +56,7 @@ public:
             return _ptr->_item;
         }                        //dereference operator
 
-        T* operator ->(){                       //member access operator
+        T operator ->(){                       //member access operator
             assert(_ptr);
             return &(_ptr->_item);
         }
@@ -66,7 +66,7 @@ public:
             return _ptr->_item;
         }                        //dereference operator
 
-        const T* operator ->()const{                       //member access operator
+        const T operator ->()const{                       //member access operator
             assert(_ptr);
             return &(_ptr->_item);
         }
@@ -143,6 +143,7 @@ public:
 
 //I
     bool empty(){ return _size == 0; }
+    bool empty() const{ return _size == 0; }
 
 //I
     T front(){ 

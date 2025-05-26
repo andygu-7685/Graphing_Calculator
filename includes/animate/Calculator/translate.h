@@ -13,34 +13,16 @@
 #include "..\Tokens\variable.h"
 #include "..\Tokens\trig.h"
 
-
-
-
 class translate{
     public:
-    
     translate(){}
-
-
     translate(graph_info* _infoIn);
+
     void set_info(graph_info* _infoIn);
-
     sf::Vector2f operator()(sf::Vector2f coord);
-
-
-
+    sf::Vector2f toPolar(sf::Vector2f coord);
 
     private:
     graph_info* _info;
-
-
-
 };
-
-
-
-
-
-
-
 #endif

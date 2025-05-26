@@ -144,6 +144,7 @@ public:
     }
 //I
     bool empty(){ return _top == nullptr; }
+    bool empty() const{ return _top == nullptr; }
 //I
     void push(T item){
         _size++;

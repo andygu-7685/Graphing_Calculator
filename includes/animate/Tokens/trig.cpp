@@ -14,21 +14,11 @@ double Trig::evaluate(double uniInput){
     switch(charSum){
         case 't' + 'a' + 'n':
         case 's' + 'e' + 'c':
-            try{
-                trigException2(uniInput);
-            }
-            catch(const MyException& e){
-                throw;
-            }
+            trigException2(uniInput);
         break;
         case 'c' + 's' + 'c':
         case 'c' + 'o' + 't':
-            try{
-                trigException1(uniInput);
-            }
-            catch(const MyException& e){
-                throw;
-            }
+            trigException1(uniInput);
         break;
         default:
         break;

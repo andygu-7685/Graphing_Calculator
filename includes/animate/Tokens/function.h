@@ -1,77 +1,40 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
-
-
-
-
-#include <string>
-#include <vector>
 #include "operator.h"
 #include "integer.h"
+#include "comma.h"
 #include "leftparen.h"
 #include "rightparen.h"
 #include "variable.h"
 #include "trig.h"
 #include "logarithm.h"
+#include "compare.h"
+#include "leftbracket.h"
+#include "rightbracket.h"
 #include "..\Tools\MyQueue.h"
 #include "..\Tools\MyStack.h"
 #include "..\exception.h"
-#include "compare.h"
+#include <algorithm> 
 
-
-
-double ConvertDigit(Stack<char>& digitStack, Queue<Token*>& finalStack);
-
-int ConvertChar(Queue<char>& charQueue, Queue<Token*>& finalQueue, vector<string> fnLst, int cmd);
-
-void clearQueue(Queue<char>& charQueue);
-
-Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd, int& errorFlag);
-
-double rpnAlgorithm(Queue<Token*> input_q, int& errorFlag, double fnInput = 0);
-
-Queue<Token*> syAlgorithm( Queue<Token*> input_q, int& errorFlag);
-
-
+double ConvertDigit(string& digits, Queue<Token*>& finalQueue);
+Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd = 0);
+double rpnAlgorithm(Queue<Token*> input_q, double fnInput = 0);
+Queue<Token*> syAlgorithm( Queue<Token*> input_q);
+void popUntil(Queue<Token*>& total_queue, Stack<Token*>& op_stack, int type = 4);
 
 class Function : public Operator{
     public:
-
     Function() : Operator("F"){}
-
-    Function(string fnStr, double varInput, vector<string> fnLst, int outerfn = -1);
-
-    int errorReport()override { return errorFlag; }
+    Function(const vector<string>& fnLst, int outerfn = -1, double varInput = 0);
 
     double evaluate(double uniInput) override;
-
+    double evaluate() override;
     void set_Input(double varInput){ Input = varInput; }
 
     private:
     Queue<Token*> fnQueue;
+    int fnIndex;
     double Input;
-    int errorFlag;
-
 };
-
-
-
-
-
-//unecessary function
-template<class T>
-void clearQueue(Queue<T>& charQueue){
-    while(!charQueue.empty())
-        charQueue.pop();
-}
-
-template<class T>
-void clearStack(Stack<T>& digitStack){
-    while(!digitStack.empty())
-        digitStack.pop();
-}
-
-
-
 #endif

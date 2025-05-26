@@ -6,7 +6,7 @@
 class LeftParen : public Token{
     public:
     LeftParen() : Token(4){}
-    
+
     int get_prec()const override{ return 0; }
 };
 #endif
