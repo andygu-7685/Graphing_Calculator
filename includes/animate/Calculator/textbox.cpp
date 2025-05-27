@@ -1,11 +1,11 @@
-#include "sidebar.h"
+#include "textbox.h"
 
-Sidebar::Sidebar(){}
+TextBox::TextBox(){}
 
-Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, float vertSpace, float margin) 
-    : _left(left), _top(top), _width(width), _height(height), UID(UIDIn)
+TextBox::TextBox(float left, float top, float width, float height, int UIDIn, float vertSpace, float margin, bool hidden, bool coutMsg) 
+    : _left(left), _top(top), _width(width), _height(height), UID(UIDIn), _hidden(hidden)
 {
-    cout << "Sidebar CTOR: TOP" << endl;
+    if(coutMsg) cout << "Sidebar CTOR: TOP" << endl;
     items.reserve(50);
     VERTICAL_LINE_SPACING = vertSpace;                  //defalut 10
     LEFT_MARGIN = margin;                               //default 10
@@ -15,7 +15,7 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, fl
     rect.setFillColor(sf::Color(105, 105, 105)); //(192,192,192)); //silver
     rect.setPosition(sf::Vector2f(left, top));
     rect.setSize(sf::Vector2f(width, height));
-    cout << "Sidebar CTOR: about to load font (marker)." << endl;
+    if(coutMsg) cout << "Sidebar CTOR: about to load font (marker)." << endl;
 
     ////- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // the font file must be in the "working directory"
@@ -30,7 +30,7 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, fl
     }
     ////- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    cout << "Sidebar CTOR: loaded font." << endl;
+    if(coutMsg) cout << "Sidebar CTOR: loaded font." << endl;
 
     //. . . . . text / font problems: . . . . . . . .
     // initializing text object in this way caused problems
@@ -42,7 +42,7 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, fl
     // sb_text = sf::Text("Initial String for myTextLabel", font);
     //
     //. . . . . . . . . . . . . . . . . . . . . . . . .
-    cout << "Sidebar CTOR: Text object initialized." << endl;
+    if(coutMsg) cout << "Sidebar CTOR: Text object initialized." << endl;
     sb_text.setFont(font);
     sb_text.setCharacterSize(20);
     sb_text.setStyle(sf::Text::Bold);
@@ -56,7 +56,7 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, fl
     for (int i = 0; i < 30; i++){
         items.push_back("");
     }
-    cout << "Sidebar: CTOR: Exit." << endl;
+    if(coutMsg) cout << "Sidebar: CTOR: Exit." << endl;
 }
 
 //1 = top left
@@ -64,7 +64,7 @@ Sidebar::Sidebar(float left, float top, float width, float height, int UIDIn, fl
 //3 = bottom right
 //4 = bottom left
 //Position are in screen coordinate
-sf::Vector2f Sidebar::getPt(int corner){
+sf::Vector2f TextBox::getPt(int corner){
     if(corner == 1)
         return sf::Vector2f(_left, _top);
     if(corner == 2)
@@ -76,35 +76,41 @@ sf::Vector2f Sidebar::getPt(int corner){
     return sf::Vector2f();
 }
 
-void Sidebar::draw(sf::RenderWindow &window)
+void TextBox::draw(sf::RenderWindow &window)
 {
-    window.draw(rect);
-    float height = _top + VERTICAL_LINE_SPACING;
+    if(!_hidden){
+        window.draw(rect);
+        float height = _top + VERTICAL_LINE_SPACING;
 
-    for (vector<string>::iterator it = items.begin();
-         it != items.end(); it++)
-    {
-        //sb_text.setColor(lineColors[it - items.begin()]);
-        bool blank = false;
-        if (it->length() == 0)
+        for (vector<string>::iterator it = items.begin();
+            it != items.end(); it++)
         {
-            // empty rows must be taken into account (getLocalBounds())
-            //     but not drawn
-            blank = true;
-            sb_text.setString("BLANK");
+            bool blank = false;
+            if (it->length() == 0)
+            {
+                // empty rows must be taken into account (getLocalBounds())
+                //     but not drawn
+                blank = true;
+                sb_text = sf::Text("BLANK", font, 20);
+                //sb_text.setString("BLANK");
+            }
+            else
+            {
+                sb_text = sf::Text(*it, font, 20);
+                //sb_text.setString(it->c_str());
+            }
+            sb_text.setColor(lineColors[it - items.begin()]);
+            sb_text.setStyle(sf::Text::Bold);
+            sb_text.setPosition(sf::Vector2f(_left + LEFT_MARGIN, height));
+            float boxHeight = sb_text.getLocalBounds().height;
+            height += boxHeight + VERTICAL_LINE_SPACING;
+            if (!blank)
+                window.draw(sb_text);
         }
-        else
-        {
-            sb_text.setString(it->c_str());
-        }
-        sb_text.setPosition(sf::Vector2f(_left + LEFT_MARGIN, height));
-        height += sb_text.getLocalBounds().height + VERTICAL_LINE_SPACING;
-        if (!blank)
-            window.draw(sb_text);
     }
 }
 
-int Sidebar::overlapText(sf::Vector2f testPos){
+int TextBox::overlapText(sf::Vector2f testPos){
     float height = _top + VERTICAL_LINE_SPACING;
 
     for (vector<string>::iterator it = items.begin(); it != items.end(); it++)
@@ -126,13 +132,13 @@ int Sidebar::overlapText(sf::Vector2f testPos){
     return -1;
 }
 
-bool Sidebar::overlap(sf::Vector2f testPos){
+bool TextBox::overlap(sf::Vector2f testPos){
     sf::Vector2f boxPt1 = getPt(1);
     sf::Vector2f boxPt2 = getPt(3);
     return (testPos.x > boxPt1.x && testPos.x < boxPt2.x && testPos.y > boxPt1.y && testPos.y < boxPt2.y);
 }
 
-float Sidebar::TextY(int lineNum){
+float TextBox::TextY(int lineNum){
     float height = _top + VERTICAL_LINE_SPACING;    
 
     for (vector<string>::iterator it = items.begin(); it != items.end(); it++)
@@ -151,18 +157,18 @@ float Sidebar::TextY(int lineNum){
     return -1;
 }
 
-float Sidebar::TextH(int lineNum){
+float TextBox::TextH(int lineNum){
     vector<string>::iterator it = items.begin() + lineNum;
     sb_text.setString(it->c_str());
     float retVal = sb_text.getLocalBounds().height;
     return retVal;
 }
 
-void Sidebar::setColor(sf::Color inputColor){
+void TextBox::setColor(sf::Color inputColor){
     rect.setFillColor(inputColor);
 }
 
-void Sidebar::setAll( float left, float top, float width, float height){
+void TextBox::setAll( float left, float top, float width, float height){
     _top = top;
     _left = left;
     _height = height;
@@ -171,12 +177,16 @@ void Sidebar::setAll( float left, float top, float width, float height){
     rect.setSize(sf::Vector2f(_width, _height));
 }
 
-string& Sidebar::operator[](int index)
+string& TextBox::operator[](int index)
 {
     return items[index];
 }
 
-const string Sidebar::operator[](int index) const
+const string TextBox::operator[](int index) const
 {
     return items[index];
+}
+
+void TextBox::hide(bool h){ 
+    _hidden = h; 
 }

@@ -11,8 +11,8 @@ sf::Vector2f translate::operator()(sf::Vector2f coord){
 }
 
 sf::Vector2f translate::toPolar(sf::Vector2f coord){
-    double cartx = coord.y * sin(coord.x);
-    double carty = coord.y * cos(coord.x);
+    double cartx = coord.y * cos(coord.x);
+    double carty = coord.y * sin(coord.x);
     double newX = (cartx * _info->scale.x) + _info->origin.x;
     double newY = -(carty * _info->scale.y) + _info->origin.y;
     return sf::Vector2f(newX, newY);

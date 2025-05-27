@@ -21,7 +21,6 @@ extern double POLAR_RENDER_L;
 const float SCREEN_WIDTH = 1400;
 const float SCREEN_HEIGHT = 800;
 
-
 const float SETB_X = SCREEN_WIDTH * 4/5;
 const float SETB_Y = SCREEN_HEIGHT - 100;
 const float SETB_W = SCREEN_WIDTH * 1/5;
@@ -30,12 +29,28 @@ const float SETB_H = 100;
 const float SIDEB_X = SCREEN_WIDTH * 4/5;
 const float SIDEB_Y = 0;
 const float SIDEB_W = SCREEN_WIDTH * 1/5;
-const float SIDEB_H = SCREEN_HEIGHT - SETB_H - 5;
+const float SIDEB_H = 200;
 
 const float INB_X = 0;
 const float INB_Y = 0;
 const float INB_W = SCREEN_WIDTH * 1/3;
 const float INB_H = 100;
+
+const float FNB_X = SCREEN_WIDTH * 4/5;
+const float FNB_Y = 205;
+const float FNB_W = SCREEN_WIDTH * 1/5;
+const float FNB_H = SCREEN_HEIGHT - SETB_H - SIDEB_H - 10;
+
+const float HISTB_X = SCREEN_WIDTH * 4/5;
+const float HISTB_Y = 205;
+const float HISTB_W = SCREEN_WIDTH * 1/5;
+const float HISTB_H = SCREEN_HEIGHT - SETB_H - SIDEB_H - 10;
+
+const int SIDEB_UID = 1;
+const int INB_UID = 2;
+const int SETB_UID = 3;
+const int FNB_UID = 4;
+const int HISTB_UID = 5;
 
 const int PARTS = 5;
 const int TYPES = 3;

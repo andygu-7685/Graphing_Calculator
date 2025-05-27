@@ -10,7 +10,9 @@
 #include <cstdlib>
 #include <cstdio>
 #include ".\Calculator\system.h"
-#include ".\Calculator\sidebar.h"
+#include ".\Calculator\textbox.h"
+#include ".\Calculator\functionbar.h"
+#include ".\Calculator\functioncell.h"
 
 #include ".\Calculator\graph_info.h"
 #include ".\Parser\rpn.h"
@@ -19,6 +21,7 @@
 
 #include "constants.h"
 
+enum dirCode {leftDir = 1, rightDir = 3, upDir = 5, downDir = 7};
 
 class animate{
 public:
@@ -32,6 +35,8 @@ public:
     int scanOverlap(sf::Vector2f testPos);
     vector<string> LoadHistory(int& errorFlag);
     vector<sf::Vector2f> LoadData(int& errorFlag, streampos& lastImport, double& lastTime);
+    void PanScreen(int dir);
+    void PanScreen(sf::Vector2f diff);
 
 private:
     sf::RenderWindow window;
@@ -43,13 +48,15 @@ private:
     sf::Font font;                      //font to draw on main screen
     sf::Text myTextLabel;               //text to draw on main screen
     bool mouseIn;                       //mouse is in the screen
-    Sidebar sidebar;                    //rectangular message sidebar
+    TextBox sidebar;                    //rectangular message sidebar
     bool sidebarMode;                   //true if display history, false if display function
-    Sidebar inputbar;
-    Sidebar settingbar;
+    TextBox inputbar;
+    TextBox settingbar;
+    TextBox historybar;
+    FunctionBar funcbar;
     string inputStr;
+    string displayStr;
     vector<string> history;
-    vector<Sidebar*> fnLine;
     int inputUID;
     int errorFlag;
     bool isDragging;
@@ -59,14 +66,10 @@ private:
     bool INB_Hidden;                    //true if hidden, false if show
     double ArdTime;                     //time for arduino data
     streampos ArdDataPos;                  //file reading location
-    bool FN_Hidden;
     sf::Vector2f dragStart;
 };
 
 string mouse_pos_string(sf::RenderWindow& window);
 void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mouse_delta = 0, int axis = 0);
-bool isOverlap(sf::Vector2f testPos, sf::Vector2f boxPt1, sf::Vector2f boxPt2);
 void clearfile(const string& fileName, const string& baseStr);
-void PanScreen(graph_info* _info, int dir);
-void PanScreen(graph_info* _info, sf::Vector2f diff);
 #endif // GAME_H
