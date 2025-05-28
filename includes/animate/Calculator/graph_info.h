@@ -53,6 +53,10 @@ struct graph_info {
         reset_scale();
     }
 
+    sf::Vector2f plotDimension(){
+        return sf::Vector2f(domain.y - domain.x, range.y - range.x);
+    }
+
 };
 
 

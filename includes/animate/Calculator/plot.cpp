@@ -15,6 +15,8 @@ vector<sf::Vector2f> plot::operator()(int mode){
     if(mode == -1)
         mode = _info->Gmode;
 
+    double increment = (_info->domain.y - _info->domain.x) / _info->totalpt;
+
     Queue<Token*> infix1 = strToQueue(_info->equation, _info->equLst);
     if(infix1.empty()){
         //must push back something so the size != 0, prevent error for draw() in graph
@@ -26,7 +28,7 @@ vector<sf::Vector2f> plot::operator()(int mode){
     postfix = sy1.postfix();
 
     if(mode == 0){
-        for(double i = _info->domain.x; i < _info->domain.y; i += 0.05){
+        for(double i = _info->domain.x; i < _info->domain.y; i += increment){
             if(i != 0){
                 sf::Vector2f coord1 = get_xy(i);
                 coord1 = T(coord1);
@@ -35,7 +37,7 @@ vector<sf::Vector2f> plot::operator()(int mode){
         }
     }
     else if(mode == 1){
-        for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += 0.05){
+        for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += increment){
             if(i != 0){
                 sf::Vector2f coord0 = get_polar(i);
                 coord0 = T.toPolar(coord0);
@@ -44,7 +46,7 @@ vector<sf::Vector2f> plot::operator()(int mode){
         }
     }
     else if(mode == 2){
-        for(double i = _info->domain.x; i < _info->domain.y; i += 0.05){
+        for(double i = _info->domain.x; i < _info->domain.y; i += increment){
             if(i != 0){
                 sf::Vector2f coord1 = get_xy(i);
                 sf::Vector2f coord2 = get_xy(i + 0.05);

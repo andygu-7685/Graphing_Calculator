@@ -33,8 +33,9 @@ public:
     void render();
     void Draw();
     int scanOverlap(sf::Vector2f testPos);
-    vector<string> LoadHistory(int& errorFlag);
+    void LoadHistory(int& errorFlag);
     vector<sf::Vector2f> LoadData(int& errorFlag, streampos& lastImport, double& lastTime);
+    void ZoomScr(int input_type, sf::Vector2f mousePos, float mouse_delta = 0, int axis = 0);
     void PanScreen(int dir);
     void PanScreen(sf::Vector2f diff);
 
@@ -70,6 +71,5 @@ private:
 };
 
 string mouse_pos_string(sf::RenderWindow& window);
-void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mouse_delta = 0, int axis = 0);
-void clearfile(const string& fileName, const string& baseStr);
+void clearfile(const string& fileName);
 #endif // GAME_H

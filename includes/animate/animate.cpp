@@ -31,7 +31,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, SIDEB_UID),
     sidebar[SB_MODE] = "HISTORY";
     settingbar[ST_SAVE] = "SAVE ALL";
     settingbar[ST_CLEAR] = "CLEAR HISTORY";
-    settingbar[ST_MODE] = "POLAR";
+    settingbar[ST_MODE] = "CARTESIAN";
 
 
 
@@ -52,7 +52,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, SIDEB_UID),
                             sf::Vector2f(SCREEN_WIDTH - SIDEB_W, SCREEN_HEIGHT), 
                             sf::Vector2f((SCREEN_WIDTH - SIDEB_W) / 2.0 , SCREEN_HEIGHT / 2.0),
                             sf::Vector2f(-20, 20),
-                            sf::Vector2f(-20, 20), 100);
+                            sf::Vector2f(-20, 20), 200);
     _info->square_scale();
     system = System(_info);
     mouseIn = true;
@@ -79,7 +79,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, SIDEB_UID),
 
 
     //Load History
-    history = LoadHistory(errorFlag);
+    LoadHistory(errorFlag);
     LoadData(errorFlag, ArdDataPos, ArdTime);
     
     
@@ -173,7 +173,7 @@ void animate::update()
     system.Step(command);
     
     sidebar[SB_KEY_PRESSED] = "( " + to_string(_info->range.x) + ", " + to_string(_info->range.y) + " )";
-    if(INB_Hidden && inputUID == 2) inputUID = 0;
+    if(INB_Hidden && inputUID == INB_UID) inputUID = 0;
 
     // mousePoint red dot:
     if (mouseIn){
@@ -243,7 +243,6 @@ void animate::processEvents()
 {
     sf::Event event;
     int zoomMode;
-    
 
     while (window.pollEvent(event)) // or waitEvent
     {
@@ -305,7 +304,7 @@ void animate::processEvents()
 
             case sf::Keyboard::PageUp:
                 sidebar[SB_KEY_PRESSED] = "ZOOM IN";
-                ZoomScr(1, _info, mousePos);
+                ZoomScr(1, mousePos);
                 system.set_info(_info);
                 command = 7;
                 break;
@@ -313,7 +312,7 @@ void animate::processEvents()
 
             case sf::Keyboard::PageDown:
                 sidebar[SB_KEY_PRESSED] = "ZOOM OUT";
-                ZoomScr(2, _info, mousePos);
+                ZoomScr(2, mousePos);
                 system.set_info(_info);
                 command = 8;
                 break;
@@ -333,9 +332,9 @@ void animate::processEvents()
                         history.push_back(inputStr);
                         INB_Hidden = !INB_Hidden;
                     }
-                    
-                    if(system.error().code() == DefFlag)
+                    else if(system.error().code() == DefFlag){
                         _info->equation = " ";
+                    }
                 }
                 else if(INB_Hidden){
                     //display the input bar of input
@@ -357,16 +356,7 @@ void animate::processEvents()
                 break;
 
             case sf::Keyboard::RShift:
-            /*
-                if(_info->polar){
-                    _info->derive = false;
-                }
-                else{
-                    _info->derive = !_info->derive;
-                    system.set_info(_info);
-                    command = 8;
-                }
-                */
+
                 break;
 
 
@@ -375,7 +365,8 @@ void animate::processEvents()
                 window.close();
                 break;
 
-
+            default:
+                break;
             }
             break;
 
@@ -416,12 +407,10 @@ void animate::processEvents()
                         rowNum = sidebar.overlapText(mousePos);
                         if(rowNum == SB_MODE){
                             sidebarMode = !sidebarMode;
-                            if(sidebarMode){
+                            if(sidebarMode)
                                 sidebar[SB_MODE] = "HISTORY";
-                            }
-                            else{
+                            else
                                 sidebar[SB_MODE] = "FUNCTIONS";
-                            }
                         }
                         break;
 
@@ -433,50 +422,48 @@ void animate::processEvents()
                         cout << "clicked setting bar:";
                         rowNum = settingbar.overlapText(mousePos);
                         if(rowNum == ST_SAVE){
-                            vector<string> historyDup = history;
-                            clearfile("historyData.txt", "Base:FileState:Data:");
+                            clearfile("historyData.txt");
                             ofstream historyIn("historyData.txt", ios::app);
-                            while(!historyDup.empty()){
-                                historyIn << historyDup.begin()->c_str() << "\n";
-                                historyDup.erase(historyDup.begin());
-                            }
 
+                            historyIn << "Base:FileState:Data:" << "\n";
+                            for(int i = 0; i < history.size(); i++)
+                                historyIn << history[i].c_str() << "\n";
 
                             historyIn << "Base:FileState:Functions:" << "\n";
-                            vector<string> fnLstDup = _info->equLst;
-                            while(!fnLstDup.empty()){
-                                historyIn << fnLstDup.begin()->c_str() << "\n";
-                                fnLstDup.erase(fnLstDup.begin());
-                            }
+                            for(int i = 0; i < _info->equLst.size(); i++)
+                                historyIn << _info->equLst[i].c_str() << "\n";
+
                             historyIn.close();
                         }
                         else if(rowNum == ST_CLEAR){
-                            clearfile("historyData.txt", "Base:FileState:Data:");
+                            clearfile("historyData.txt");
                             ofstream historyIn("historyData.txt", ios::app);
+                            historyIn << "Base:FileState:Data:" << "\n";
                             historyIn << "Base:FileState:Functions:" << "\n";
-                            vector<string> fnLstDup = _info->equLst;
-                            while(!fnLstDup.empty()){
-                                historyIn << fnLstDup.begin()->c_str() << "\n";
-                                fnLstDup.erase(fnLstDup.begin());
-                            }
+                            for(int i = 0; i < _info->equLst.size(); i++)
+                                historyIn << _info->equLst[i].c_str() << "\n";
+                            
+                            history.clear();
                             historyIn.close();
                         }
                         else if(rowNum == ST_MODE){
                             _info->Gmode++;
-                            if(_info->Gmode >= 4)
-                                _info->Gmode = 0;
-                        
-                            if(_info->Gmode == 0){
-                                settingbar[ST_MODE] = "CARTESIAN";
-                            }
-                            else if(_info->Gmode == 1){
-                                settingbar[ST_MODE] = "POLAR";
-                            }
-                            else if(_info->Gmode == 2){
-                                settingbar[ST_MODE] = "DERIVATIVE";
-                            }
-                            else{
-                                settingbar[ST_MODE] = "ARDUINO";
+                            switch(_info->Gmode){
+                                case CART_MODE:
+                                    settingbar[ST_MODE] = "CARTESIAN";
+                                break;
+                                case POLAR_MODE:
+                                    settingbar[ST_MODE] = "POLAR";
+                                break;
+                                case DERIVE_MODE:
+                                    settingbar[ST_MODE] = "DERIVATIVE";
+                                break;
+                                case ARD_MODE:
+                                    settingbar[ST_MODE] = "ARDUINO";
+                                break;
+                                default:
+                                    _info->Gmode = 0;
+                                break;
                             }
                             system.set_info(_info);
                             command = 2;
@@ -526,9 +513,8 @@ void animate::processEvents()
                 zoomMode = 2;
             }
 
-
             if(event.mouseWheelScroll.delta != 0 && mouseIn){
-                ZoomScr(3, _info, mousePos, event.mouseWheelScroll.delta, zoomMode);
+                ZoomScr(3, mousePos, event.mouseWheelScroll.delta, zoomMode);
                 system.set_info(_info);
                 command = 9;
             }
@@ -544,12 +530,12 @@ void animate::processEvents()
                     cursorPos--;
                 }
             }                       
-            else if (event.text.unicode == 13 && inputUID == 2){
-                //dont push anything when Enter is pressed
-            }
             else if (event.text.unicode < 128 && inputUID == 2){
                 inputStr.insert(cursorPos, 1, static_cast<char>(event.text.unicode));
                 cursorPos++;
+            }
+            else if (event.text.unicode == 13 && inputUID == 2){
+                //dont push anything when Enter is pressed
             }
             break;
 
@@ -562,13 +548,14 @@ void animate::processEvents()
             break;
         }
         
+        //UI Asethetic
         sidebar.setLineColor(sf::Color::White, SB_MODE);
         settingbar.setLineColor(sf::Color::White, ST_CLEAR);
         settingbar.setLineColor(sf::Color::White, ST_SAVE);
         settingbar.setLineColor(sf::Color::White, ST_MODE);
         int lineID;
         int hoverUID = scanOverlap(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
-        if(hoverUID == 1){
+        if(hoverUID == SIDEB_UID){
             lineID = sidebar.overlapText(sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y));
             if(lineID == SB_MODE)
                 sidebar.setLineColor(sf::Color::Yellow, SB_MODE);
@@ -633,28 +620,31 @@ string mouse_pos_string(sf::RenderWindow &window)
 //0 = default zoom
 //1 = only zoom x
 //2 = only zoom y
-void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mouse_delta, int axis){
+void animate::ZoomScr(int input_type, sf::Vector2f mousePos, float mouse_delta, int axis){
     //the zoom rate depend on the ratio of the screen
-    double zoomFractY;                  //how many coordinate to change for Y 
-    double zoomFractX;
-    if((_info->range.y - _info->range.x) > (_info->domain.y - _info->domain.x)){
-        zoomFractY = (_info->domain.y - _info->domain.x) / 50.0;
-        zoomFractX = (_info->domain.y - _info->domain.x) / 50.0;
-    }
-    else{
-        zoomFractY = (_info->range.y - _info->range.x) / 50.0;
-        zoomFractX = (_info->range.y - _info->range.x) / 50.0;
-    }
+    sf::Vector2f zoomFract;
+    sf::Vector2f plotDim = _info->plotDimension();
+    //always zoom from larger axis
+    // if(plotDim.y > plotDim.x){
+    //     zoomFract.y = plotDim.y / 50.0;
+    //     zoomFract.x = plotDim.x / 50.0;
+    // }
+    // else{
+    //     zoomFract.y = plotDim.y / 50.0;
+    //     zoomFract.x = plotDim.x / 50.0;
+    // }
+    zoomFract.y = plotDim.y / 50.0;
+    zoomFract.x = plotDim.x / 50.0;
 
     double xratio1(_info->dimensions.x / _info->dimensions.y), xratio2(_info->dimensions.x / _info->dimensions.y);
     double yratio1(1), yratio2(1);
     if(axis == 1){                      //only zoom x
-        zoomFractX = (_info->domain.y - _info->domain.x) / 50.0;
+        zoomFract.x = plotDim.x / 50.0;
         yratio1 = 0;
         yratio2 = 0;
     }
     else if(axis == 2){                 //only zoom y
-        zoomFractY = (_info->range.y - _info->range.x) / 50.0;
+        zoomFract.x = plotDim.y / 50.0;
         xratio1 = 0;
         xratio2 = 0;
     }
@@ -704,10 +694,10 @@ void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mou
 
     //if there's a zoom
     if(Zoom == 1 || Zoom == -1){
-        _info->domain.x += xratio1 * zoomFractX * Zoom;
-        _info->domain.y -= xratio2 * zoomFractX * Zoom;
-        _info->range.x += yratio2 * zoomFractY * Zoom;
-        _info->range.y -= yratio1 * zoomFractY * Zoom;
+        _info->domain.x += xratio1 * zoomFract.x * Zoom;
+        _info->domain.y -= xratio2 * zoomFract.x * Zoom;
+        _info->range.x += yratio2 * zoomFract.y * Zoom;
+        _info->range.y -= yratio1 * zoomFract.y * Zoom;
     }
 
 
@@ -725,17 +715,15 @@ void ZoomScr(int input_type, graph_info* _info, sf::Vector2f mousePos, float mou
 
 
 
-
-void clearfile(const string& fileName, const string& baseStr){
-    if (remove(fileName.c_str()) == 0) {
+//clear the file with name fileName in the current directory,
+//insert the baseStr to the beginning of the file
+void clearfile(const string& fileName){
+    if (remove(fileName.c_str()) == 0)
         cout << "File " << fileName << " successfully deleted.\n";
-    } else {
+    else
         cout << "Error deleting file";
-    }
 
-    //PATH: "C:/Users/agu4/99_00_final_project-andygu-7685/temp.txt"
     ofstream fout("temp.txt", ios::app);
-    fout << baseStr << "\n";
     fout.close();
 
     if (rename("temp.txt", fileName.c_str()) != 0) 
@@ -748,8 +736,7 @@ void clearfile(const string& fileName, const string& baseStr){
 
 
 
-vector<string> animate::LoadHistory(int& errorFlag){
-    vector<string> history;
+void animate::LoadHistory(int& errorFlag){
     string metaData, equationData;
     ifstream fin("historyData.txt");
 
@@ -779,7 +766,6 @@ vector<string> animate::LoadHistory(int& errorFlag){
     }
 
     fin.close();
-    return history;
 }
 
 
@@ -831,15 +817,18 @@ vector<sf::Vector2f> animate::LoadData(int& errorFlag, streampos& lastImport, do
 //5 = up
 //7 = down
 void animate::PanScreen(int dir){
+    double panInc;
     if(dir > 4){
-        _info->origin.y -= (dir-6) * PANINC * _info->scale.y;
-        _info->range.x -= (dir-6) * PANINC;
-        _info->range.y -= (dir-6) * PANINC;
+        panInc = (_info->range.y - _info->range.x) * PANFRAC;
+        _info->origin.y -= (dir-6) * panInc * _info->scale.y;
+        _info->range.x -= (dir-6) * panInc;
+        _info->range.y -= (dir-6) * panInc;
     }
     else{
-        _info->origin.x -= (dir-2) * PANINC * _info->scale.x;
-        _info->domain.x += (dir-2) * PANINC;
-        _info->domain.y += (dir-2) * PANINC;
+        panInc = (_info->domain.y - _info->domain.x) * PANFRAC;
+        _info->origin.x -= (dir-2) * panInc * _info->scale.x;
+        _info->domain.x += (dir-2) * panInc;
+        _info->domain.y += (dir-2) * panInc;
     }
 }
 
