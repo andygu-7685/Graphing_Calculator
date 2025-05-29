@@ -52,7 +52,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, SIDEB_UID),
                             sf::Vector2f(SCREEN_WIDTH - SIDEB_W, SCREEN_HEIGHT), 
                             sf::Vector2f((SCREEN_WIDTH - SIDEB_W) / 2.0 , SCREEN_HEIGHT / 2.0),
                             sf::Vector2f(-20, 20),
-                            sf::Vector2f(-20, 20), 200);
+                            sf::Vector2f(-20, 20), 400);
     _info->square_scale();
     system = System(_info);
     mouseIn = true;
@@ -624,19 +624,10 @@ void animate::ZoomScr(int input_type, sf::Vector2f mousePos, float mouse_delta, 
     //the zoom rate depend on the ratio of the screen
     sf::Vector2f zoomFract;
     sf::Vector2f plotDim = _info->plotDimension();
-    //always zoom from larger axis
-    // if(plotDim.y > plotDim.x){
-    //     zoomFract.y = plotDim.y / 50.0;
-    //     zoomFract.x = plotDim.x / 50.0;
-    // }
-    // else{
-    //     zoomFract.y = plotDim.y / 50.0;
-    //     zoomFract.x = plotDim.x / 50.0;
-    // }
-    zoomFract.y = plotDim.y / 50.0;
-    zoomFract.x = plotDim.x / 50.0;
+    zoomFract.y = plotDim.y / 30.0;
+    zoomFract.x = plotDim.x / 30.0;
 
-    double xratio1(_info->dimensions.x / _info->dimensions.y), xratio2(_info->dimensions.x / _info->dimensions.y);
+    double xratio1(1), xratio2(1);
     double yratio1(1), yratio2(1);
     if(axis == 1){                      //only zoom x
         zoomFract.x = plotDim.x / 50.0;
@@ -665,6 +656,7 @@ void animate::ZoomScr(int input_type, sf::Vector2f mousePos, float mouse_delta, 
         yratio1 *= mousePos.y / _info->dimensions.y;
         yratio2 *= (_info->dimensions.y - mousePos.y) / _info->dimensions.y;
     }
+
 
 
     //coordinate of center of zoom relative to the origin in plotting coordinate
