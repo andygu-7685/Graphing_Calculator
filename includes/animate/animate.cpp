@@ -199,6 +199,7 @@ void animate::update()
     //update error label
     if(system.error().code() == DefFlag){
         string defStr = inputStr;
+        defStr.erase(remove(defStr.begin(), defStr.end(), '\r'), defStr.end());             //remove all retrun character
         int fnIndex = defStr[1] - '0';
         assert(defStr.size() > 3);         //already debuged
 
@@ -214,15 +215,15 @@ void animate::update()
                 (_info->equLst)[fnIndex] = defStr.substr(3, defStr.size() - 3);
                 history.push_back(defStr.substr(3, defStr.size() - 3));
                 INB_Hidden = !INB_Hidden;
+                system.clear();
             }
             else{
-                inputbar[0] = system.error().what();           //if the name of function defining is invalid
+                system.setError(MyException(invalidE, "Error: Invalid function name"));           //if the name of function defining is invalid
             }
         }
         catch(MyException e){
-            inputbar[0] = e.what();
+            system.setError(e);
         }
-        system.clear();
     }
     else if(system.error().code() != -1){
         inputbar[0] = system.error().what();
@@ -473,29 +474,34 @@ void animate::processEvents()
                     case FNB_UID:
                         cout << "clicked function bar:";
                         rowNum = funcbar.overlapText(mousePos);
-                        cursorPos = 0;                  //reset cursor
-                        //delete the item
-                        if(!sidebarMode && mousePos.x > SCREEN_WIDTH - 40){
-                            _info->equLst[rowNum] = " ";
-                            funcbar.setFunctions(_info->equLst);
-                            inputStr = "";
-                            _info->equation = inputStr;
-                            system.set_info(_info);
-                            command = 2;
-                        }
-                        else{
-                            inputStr = funcbar[rowNum];
-                            _info->equation = inputStr;
-                            system.set_info(_info);
-                            command = 2;
+                        if(rowNum != -1){
+                            cursorPos = 0;                  //reset cursor
+                            //delete the item
+                            if(!sidebarMode && mousePos.x > SCREEN_WIDTH - 40){
+                                _info->equLst[rowNum] = " ";
+                                funcbar.setFunctions(_info->equLst);
+                                inputStr = "";
+                                _info->equation = inputStr;
+                                system.set_info(_info);
+                                command = 2;
+                            }
+                            else{
+                                inputStr = funcbar[rowNum];
+                                _info->equation = inputStr;
+                                system.set_info(_info);
+                                command = 2;
+                            }
                         }
                         break;
                     case HISTB_UID:
-                        cout << "clicked history bar:";
-                        inputStr = historybar[rowNum];
-                        _info->equation = inputStr;
-                        system.set_info(_info);
-                        command = 2;
+                        rowNum = historybar.overlapText(mousePos);
+                        if(rowNum != -1){
+                            cursorPos = 0;
+                            inputStr = historybar[rowNum];
+                            _info->equation = inputStr;
+                            system.set_info(_info);
+                            command = 2;
+                        }
                         break;
                     default:
 

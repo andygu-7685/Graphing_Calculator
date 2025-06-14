@@ -7,7 +7,7 @@
 
 using namespace std;
 
-enum ecodes {fnE1, fnE2, fnE3, defE, defineE, syE, rpnE1, rpnE2, inputE, divideE, trigE1, trigE2, logE, parenE, DomainE1, DomainE2, CommaE, DefFlag = 100};
+enum ecodes {fnE1, fnE2, fnE3, defE, defineE, syE, rpnE1, rpnE2, inputE, divideE, trigE1, trigE2, logE, parenE, DomainE1, DomainE2, CommaE, invalidE, DefFlag = 100};
 
 bool dequ(double left, double right, double epsilon = 0.00000000001);
 

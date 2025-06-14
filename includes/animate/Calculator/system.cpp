@@ -61,6 +61,14 @@ MyException System::error(){
     return sysException;
 }
 
+void System::setError(int eCode, string eMsg){
+    sysException = MyException(eCode, eMsg);
+}
+
+void System::setError(MyException excep){
+    sysException = excep;
+}
+
 void System::clear(){
     sysException = MyException();
 }

@@ -19,6 +19,8 @@ public:
     void Draw(sf::RenderWindow& widnow);
     void set_info(graph_info* _infoIn);
     MyException error();
+    void setError(int eCode, string eMsg);
+    void setError(MyException excep);
     void clear();
 
 private:
