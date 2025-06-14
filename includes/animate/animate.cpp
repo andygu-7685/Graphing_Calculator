@@ -491,6 +491,7 @@ void animate::processEvents()
                         }
                         break;
                     case HISTB_UID:
+                        cout << "clicked history bar:";
                         inputStr = historybar[rowNum];
                         _info->equation = inputStr;
                         system.set_info(_info);
@@ -622,82 +623,68 @@ string mouse_pos_string(sf::RenderWindow &window)
 //2 = only zoom y
 void animate::ZoomScr(int input_type, sf::Vector2f mousePos, float mouse_delta, int axis){
     //the zoom rate depend on the ratio of the screen
-    sf::Vector2f zoomFract;
-    sf::Vector2f plotDim = _info->plotDimension();
-    zoomFract.y = plotDim.y / 30.0;
-    zoomFract.x = plotDim.x / 30.0;
-
-    double xratio1(1), xratio2(1);
-    double yratio1(1), yratio2(1);
-    if(axis == 1){                      //only zoom x
-        zoomFract.x = plotDim.x / 50.0;
-        yratio1 = 0;
-        yratio2 = 0;
-    }
-    else if(axis == 2){                 //only zoom y
-        zoomFract.x = plotDim.y / 50.0;
-        xratio1 = 0;
-        xratio2 = 0;
-    }
-
-    
+    sf::Vector2f plotDim = _info->plotDimension();                                              //plot dimension inplot coordinate
+    sf::Vector2f ZoomCenter = sf::Vector2f((_info->dimensions.x/2), (_info->dimensions.y/2));   //zoom center in screen coordinate
+    sf::Vector2f zoomFract = sf::Vector2f(plotDim.x / 30.0, plotDim.y / 30.0);                  //total delta domain & range of a zoom action
+    sf::Vector2f xratio = sf::Vector2f(1, 1);                                                   //a fraction that determin how much of the delta 
+                                                                                                //domain goes on each side of the mouse pos
+                                                                                                //when adding x and y, it equal to 1 
+    sf::Vector2f yratio = sf::Vector2f(1, 1);                                                   //a fraction that determin how much of the delta 
+                                                                                                //range goes on each side of the mouse pos 
+                                                                                                //when adding x and y, it equal to 1 
     // -1 = zoom out, 1 = zoom in, 3 = no zoom
     int Zoom = 3;
-    //Center of the zoom
-    double ZoomX(_info->dimensions.x/2), ZoomY(_info->dimensions.y/2);
+    
+    if(axis == 1)                      //only zoom x
+        yratio = sf::Vector2f(0,0);
+    else if(axis == 2)                 //only zoom y
+        xratio = sf::Vector2f(0,0);
+
+    //Keep seperate from Zoom assignment  b/c ZoomCenter need be 
+    //at mousePos when at minimum range and mouse zoom
     if(input_type == 3 && mousePos.x < _info->dimensions.x 
                        && mousePos.y < _info->dimensions.y
                        && mousePos.x > 0
                        && mousePos.y > 0){
-        ZoomX = mousePos.x;
-        ZoomY = mousePos.y;
-        xratio1 *= mousePos.x / _info->dimensions.x;
-        xratio2 *= (_info->dimensions.x - mousePos.x) / _info->dimensions.x;
-        yratio1 *= mousePos.y / _info->dimensions.y;
-        yratio2 *= (_info->dimensions.y - mousePos.y) / _info->dimensions.y;
+        ZoomCenter = mousePos;
+        xratio.x *= mousePos.x / _info->dimensions.x;
+        xratio.y *= (_info->dimensions.x - mousePos.x) / _info->dimensions.x;
+        yratio.x *= mousePos.y / _info->dimensions.y;
+        yratio.y *= (_info->dimensions.y - mousePos.y) / _info->dimensions.y;
     }
 
-
-
-    //coordinate of center of zoom relative to the origin in plotting coordinate
-    sf::Vector2f ScrO((ZoomX - _info->origin.x) / _info->scale.x,
-                      (ZoomY - _info->origin.y) / _info->scale.y);
-
-    //if "i" or "o" zoom
-    if(input_type == 1 && (_info->domain.y - _info->domain.x) >= MIN_RANGE && 
-                          (_info->range.y - _info->range.x) >= MIN_RANGE)
-        Zoom = 1;
-    if(input_type == 2)
-        Zoom = -1;
     
     //if mouse zoom
-    if(input_type == 3 && mouse_delta > 0){
-       if((axis == 1 && (_info->domain.y - _info->domain.x) >= MIN_RANGE) ||
-          (axis == 2 && (_info->range.y - _info->range.x) >= MIN_RANGE))
-            Zoom = 1;
-
-       if(axis == 0 && ((_info->domain.y - _info->domain.x) >= MIN_RANGE) &&
-         ((_info->range.y - _info->range.x) >= MIN_RANGE))
-            Zoom = 1;
-    }
-    if(input_type == 3 && mouse_delta < 0)
+    if( input_type == 3 && mouse_delta > 0 && ( 
+        axis == 1 && (plotDim.x >= MIN_RANGE) ||
+        axis == 2 && (plotDim.y >= MIN_RANGE) ||
+        axis == 0 && (plotDim.x >= MIN_RANGE && plotDim.y >= MIN_RANGE)))
+        Zoom = 1;
+    else if(input_type == 3 && mouse_delta < 0)
+        Zoom = -1;
+    //if "i" or "o" zoom
+    else if(input_type == 1 && plotDim.x >= MIN_RANGE && plotDim.y >= MIN_RANGE)
+        Zoom = 1;
+    else if(input_type == 2)
         Zoom = -1;
 
 
     //if there's a zoom
     if(Zoom == 1 || Zoom == -1){
-        _info->domain.x += xratio1 * zoomFract.x * Zoom;
-        _info->domain.y -= xratio2 * zoomFract.x * Zoom;
-        _info->range.x += yratio2 * zoomFract.y * Zoom;
-        _info->range.y -= yratio1 * zoomFract.y * Zoom;
+        _info->domain.x += xratio.x * zoomFract.x * Zoom;
+        _info->domain.y -= xratio.y * zoomFract.x * Zoom;
+        _info->range.x += yratio.y * zoomFract.y * Zoom;
+        _info->range.y -= yratio.x * zoomFract.y * Zoom;
     }
 
 
-
+    //coordinate of center of zoom relative to the origin in plotting coordinate
+    sf::Vector2f ScrO((ZoomCenter.x - _info->origin.x) / _info->scale.x,
+                      (ZoomCenter.y - _info->origin.y) / _info->scale.y);
     _info->reset_scale();
     //calculate position of the origin after zoom
-    _info->origin = sf::Vector2f (ZoomX - (ScrO.x * _info->scale.x), 
-                                  ZoomY - (ScrO.y * _info->scale.y));
+    _info->origin = sf::Vector2f (ZoomCenter.x - (ScrO.x * _info->scale.x), 
+                                  ZoomCenter.y - (ScrO.y * _info->scale.y));
 }
 
 

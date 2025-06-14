@@ -12,6 +12,10 @@ void plot::set_info(graph_info* _infoIn){
 
 vector<sf::Vector2f> plot::operator()(int mode){
     points = vector<sf::Vector2f>();
+    bool render = true;
+    int renderState = 0;                //0 default, 1 outside screen, 2 enter screen, 3 inside screen, 4 exit screen
+    double currentDist;
+    double screenDist = pow(_info->dimensions.x / 8.0, 2.0) + pow(_info->dimensions.y / 8.0, 2.0);
     if(mode == -1)
         mode = _info->Gmode;
 
@@ -39,9 +43,95 @@ vector<sf::Vector2f> plot::operator()(int mode){
     else if(mode == 1){
         for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += increment){
             if(i != 0){
+                render = true;
                 sf::Vector2f coord0 = get_polar(i);
                 coord0 = T.toPolar(coord0);
-                points.push_back(coord0);
+                currentDist = pow(coord0.x - _info->dimensions.x / 2.0, 2.0) + pow(coord0.y - _info->dimensions.y / 2.0, 2.0);
+
+                if(currentDist < screenDist && !dequ(currentDist, screenDist, 0.05)){
+                    switch(renderState){
+                        case 0:
+                            increment = 0.05;
+                            renderState = 3;
+                        break;
+                        case 1:
+                            i -= increment;
+                            increment /= 2.0;
+                            render = false;
+                            renderState = 2;
+                        break;
+                        case 2:
+                            i -= increment;
+                            increment /= 2.0;
+                            render = false;
+                        break;
+                        case 3:
+
+                        break;
+                        case 4:
+                            increment /= 2.0;
+                            render = false;
+                        break;
+                        default:
+                        break;
+                    }
+                }
+                else if(currentDist > screenDist && !dequ(currentDist, screenDist, 0.05)){
+                    switch(renderState){
+                        case 0:
+                            increment = 1;
+                            renderState = 1;
+                        break;
+                        case 1:
+
+                        break;
+                        case 2:
+                            increment /= 2.0;
+                            render = false;
+                        break;
+                        case 3:
+                            i -= increment;
+                            increment /= 2.0;
+                            render = false;
+                            renderState = 4;
+                        break;
+                        case 4:
+                            i -= increment;
+                            increment /= 2.0;
+                            render = false;
+                        break;
+                        default:
+                        break;
+                    }
+                }
+                else if(dequ(currentDist, screenDist, 0.05)){
+                    switch(renderState){
+                        case 0:
+
+                        break;
+                        case 1:
+                            increment = 0.05;
+                            renderState = 3;
+                        break;
+                        case 2:
+                            increment = 0.05;
+                            renderState = 3;
+                        break;
+                        case 3:
+                            increment = 1;
+                            renderState = 1;
+                        break;
+                        case 4:
+                            increment = 1;
+                            renderState = 1;
+                        break;
+                        default:
+                        break;
+                    }
+                }
+
+                if(render)
+                    points.push_back(coord0);
             }
         }
     }
