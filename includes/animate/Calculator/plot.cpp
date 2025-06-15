@@ -46,13 +46,14 @@ vector<sf::Vector2f> plot::operator()(int mode){
         for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += increment, ctr++){
             if(i != 0){
                 render = true;
-                int maxAttempt = 300;
+                int maxAttempt = 300;                                       //max attempt to binary search the boundary, 
+                                                                            //due to the float point calculation
                 sf::Vector2f coord0 = get_polar(i);
                 sf::Vector2f plotCoord0 = coord0;
                 coord0 = T.toPolar(coord0);
                 currentDist = pow(coord0.x - _info->dimensions.x / 2.0, 2.0) + pow(coord0.y - _info->dimensions.y / 2.0, 2.0);
 
-                if(currentDist < screenDist && !dequ(currentDist, screenDist, 0.3) && ctr < maxAttempt){
+                if(currentDist < screenDist && !dequ(currentDist, screenDist, 0.5)){
                     switch(renderState){
                         case 0:
                             increment = POLAR_RESOLUTION;
@@ -79,7 +80,7 @@ vector<sf::Vector2f> plot::operator()(int mode){
                         break;
                     }
                 }
-                else if(currentDist > screenDist && !dequ(currentDist, screenDist, 0.3) && ctr < maxAttempt){
+                else if(currentDist > screenDist && !dequ(currentDist, screenDist, 0.5)){
                     switch(renderState){
                         case 0:
                             increment = POLAR_PRECISION_MIN;
@@ -106,7 +107,7 @@ vector<sf::Vector2f> plot::operator()(int mode){
                         break;
                     }
                 }
-                else if(dequ(currentDist, screenDist, 0.3) || ctr >= maxAttempt){
+                else if(dequ(currentDist, screenDist, 0.5)){
                     switch(renderState){
                         case 0:
 
