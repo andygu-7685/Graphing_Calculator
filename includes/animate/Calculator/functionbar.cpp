@@ -15,14 +15,15 @@ void FunctionBar::setFunctions(vector<string> fnLst){
     fnCell.clear();
     items = fnLst;
     float height = _top + VERTICAL_LINE_SPACING;
+    int fnIndexCtr = 0;
     for (vector<string>::iterator it = items.begin();
-        it != items.end(); it++)
+        it != items.end(); it++, fnIndexCtr++)
     {
         sf::Vector2f cellPos = sf::Vector2f(_left + LEFT_MARGIN, height);
         sf::Vector2f cellSize = sf::Vector2f(_width - LEFT_MARGIN, cellHeight);
         //The UID is same for all cells, might need implementation
         FunctionCell cell(cellPos.x, cellPos.y, cellSize.x, cellSize.y, UID, 1.0, 5.0, _hidden);
-        cell[0] = *it;
+        cell[0] = "F" + to_string(fnIndexCtr) + ":" + *it;
         fnCell.push_back(cell);
         height += cellHeight + VERTICAL_LINE_SPACING;
     }
@@ -31,9 +32,6 @@ void FunctionBar::setFunctions(vector<string> fnLst){
 void FunctionBar::draw(sf::RenderWindow& window){
     if(!_hidden){
         window.draw(rect);
-        if(fnCell.empty()){
-            cout << "empty vector error:";
-        }
         for (int i = 0; i < fnCell.size(); i++){
             FunctionCell cell = fnCell[i];
             cell.draw(window);

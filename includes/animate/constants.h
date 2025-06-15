@@ -14,9 +14,12 @@ const double COLLISION_COEF = 0.02;
 //graph constants
 const double PANFRAC = 1.0 / 50.0;          //how much to pan as fraction plotting domain or range
 const double ZOOMRATE = 2;                  //how much to zoom in plotting coordinate
-const double MIN_RANGE = 0.01;                 //smallest range for the graph 
+const double MIN_RANGE = 0.0001;                 //smallest range for the graph 
 extern double POLAR_RENDER_H;
 extern double POLAR_RENDER_L;
+const double POLAR_PRECISION_MIN = (3 * 2*pi) / (360.0);       
+const double POLAR_PRECISION_MAX = (15 * 2*pi) / (360.0); 
+const double POLAR_RESOLUTION = 0.05;
 
 //UI constants
 const float SCREEN_WIDTH = 1400;

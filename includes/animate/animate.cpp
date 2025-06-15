@@ -464,6 +464,7 @@ void animate::processEvents()
                                 break;
                                 default:
                                     _info->Gmode = 0;
+                                    settingbar[ST_MODE] = "CARTESIAN";
                                 break;
                             }
                             system.set_info(_info);
@@ -494,6 +495,7 @@ void animate::processEvents()
                         }
                         break;
                     case HISTB_UID:
+                        cout << "clicked history bar:";
                         rowNum = historybar.overlapText(mousePos);
                         if(rowNum != -1){
                             cursorPos = 0;
