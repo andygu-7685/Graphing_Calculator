@@ -25,6 +25,7 @@ struct graph_info {
     sf::Vector2f range;
     int Gmode = 0;                          //0 = cartesian, 1 = polar, 2 = derive
     int totalpt;
+    int totalgraph = 1;
 
     graph_info(string equ, sf::Vector2f dim, sf::Vector2f org, sf::Vector2f rang, sf::Vector2f dom, int tot) 
     : equation(equ), dimensions(dim), origin(org), range(rang), domain(dom), totalpt(tot) {

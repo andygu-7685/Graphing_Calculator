@@ -9,14 +9,16 @@ System::System(){}
 System::System(graph_info* _infoIn)
 {
     _info = _infoIn;
-    _g = graph(_infoIn);
-    _g.calc_plot(1);
+    _graph = graph(_infoIn);
+    _g = vector<graph>(10, graph(_infoIn));
     sysException = MyException();
 }
 
 void System::set_info(graph_info* _infoIn){
-    _info = _infoIn; 
-    _g.set_info(_info);
+    _info = _infoIn;
+    _graph.set_info(_info);
+    for(int i = 0; i < _g.size(); i++)
+        _g[i].set_info(_info);
     sysException = MyException();
 }
 
@@ -34,7 +36,9 @@ void System::Step(int& command)
         case 9:
         case 10:
             try{
-                _g.calc_plot();
+                _graph.calc_plot(-1);
+                for(int i = 0; i < _info->totalgraph; i++)
+                    _g[i].calc_plot(i);
             }
             catch(MyException e){
                 sysException = e;
@@ -50,7 +54,9 @@ void System::Draw(sf::RenderWindow &window)
 {
     window.clear();
     try{
-        _g.draw(window);
+        _graph.draw(window);
+        for(int i = 0; i < _info->totalgraph; i++)
+            _g[i].draw(window);
     }
     catch(MyException e){
         sysException = e;

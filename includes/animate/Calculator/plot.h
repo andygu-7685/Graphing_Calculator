@@ -23,7 +23,7 @@ class plot{
     plot(graph_info* _infoIn);
 
     void set_info(graph_info* _infoIn);
-    vector<sf::Vector2f> operator()(int mode = -1);
+    vector<sf::Vector2f> operator()(int index = 0, int mode = -1);
     sf::Vector2f get_xy(double input_x);
     sf::Vector2f get_polar(double input_x);
 

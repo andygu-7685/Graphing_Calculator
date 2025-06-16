@@ -10,14 +10,14 @@ void plot::set_info(graph_info* _infoIn){
     T.set_info(_info);
 }
 
-vector<sf::Vector2f> plot::operator()(int mode){
+vector<sf::Vector2f> plot::operator()(int index, int mode){
     points = vector<sf::Vector2f>();
-    if(mode == -1)
-        mode = _info->Gmode;
+    string currentEqu = ((index == -1) ? _info->equation : _info->plotLst[index]);
+    if(mode == -1) mode = _info->Gmode;
 
     double increment = (_info->domain.y - _info->domain.x) / _info->totalpt;
+    Queue<Token*> infix1 = strToQueue(currentEqu, _info->equLst);
 
-    Queue<Token*> infix1 = strToQueue(_info->equation, _info->equLst);
     if(infix1.empty()){
         //must push back something so the size != 0, prevent error for draw() in graph
          points.push_back(sf::Vector2f(0,0));
@@ -37,22 +37,21 @@ vector<sf::Vector2f> plot::operator()(int mode){
         }
     }
     else if(mode == 1){
-        int ctr(0), currentPts(0);
+        int currentPts(0);
         bool render = true;
         int renderState = 0;                //0 default, 1 outside screen, 2 enter screen, 3 inside screen, 4 exit screen
         double currentDist, totalDist(0), originDist;
         double screenDist = pow(_info->dimensions.x / 8.0, 2.0) + pow(_info->dimensions.y / 8.0, 2.0);
         
-        for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += increment, ctr++){
+        for(double i = POLAR_RENDER_L; i < POLAR_RENDER_H; i += increment){
             if(i != 0){
                 render = true;
-                int maxAttempt = 300;                                       //max attempt to binary search the boundary, 
-                                                                            //due to the float point calculation
                 sf::Vector2f coord0 = get_polar(i);
                 sf::Vector2f plotCoord0 = coord0;
                 coord0 = T.toPolar(coord0);
                 currentDist = pow(coord0.x - _info->dimensions.x / 2.0, 2.0) + pow(coord0.y - _info->dimensions.y / 2.0, 2.0);
 
+                //probe screen boundary using binary search
                 if(currentDist < screenDist && !dequ(currentDist, screenDist, 0.5)){
                     switch(renderState){
                         case 0:
@@ -132,12 +131,12 @@ vector<sf::Vector2f> plot::operator()(int mode){
                         break;
                     }
 
-                    if(ctr >= maxAttempt)
-                        ctr = 0;
                 }
 
                 if(render){
                     points.push_back(coord0);
+
+                    //adjust sample density
                     originDist = pow(abs(plotCoord0.x), 2.0) + pow(abs(plotCoord0.y), 2.0);
                     totalDist += originDist;
                     currentPts++;

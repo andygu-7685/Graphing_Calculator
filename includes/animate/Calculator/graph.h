@@ -22,7 +22,6 @@ class graph{
     graph_info* _info;
     sf::CircleShape pt;
     vector<sf::Vector2f> points;
-    vector<vector<sf::Vector2f>> ptSets;
     plot plotter;
 
 };
