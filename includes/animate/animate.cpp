@@ -770,8 +770,6 @@ vector<sf::Vector2f> animate::LoadData(int& errorFlag, streampos& lastImport, do
     getline(fin, metaData);
     fin.seekg(lastImport - 2);
     getline(fin, holder);
-    
-
 
     if(metaData == "Base:FileState:Arduino:"){
         while(getline(fin, singleImport)){
