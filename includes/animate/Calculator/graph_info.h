@@ -19,16 +19,16 @@ struct graph_info {
     vector<string> plotLst = {" ", " ", " ", " ", " ", " ", " ", " ", " ", " "};
     vector<string> equLst = {" ", " ", " ", " ", " ", " ", " ", " ", " ", " "};
     vector<sf::Vector2f> ArduinoIn;
-    sf::Vector2f dimensions;
-    sf::Vector2f origin;
-    sf::Vector2f scale;
-    sf::Vector2f domain;
-    sf::Vector2f range;
+    sf::Vector2<double> dimensions;
+    sf::Vector2<double> origin;
+    sf::Vector2<double> scale;
+    sf::Vector2<double> domain;
+    sf::Vector2<double> range;
     int Gmode = 0;                          //0 = cartesian, 1 = polar, 2 = derive
     int totalpt;
     int totalgraph = 1;
 
-    graph_info(string equ, sf::Vector2f dim, sf::Vector2f org, sf::Vector2f rang, sf::Vector2f dom, int tot) 
+    graph_info(string equ, sf::Vector2<double> dim, sf::Vector2<double> org, sf::Vector2<double> rang, sf::Vector2<double> dom, int tot) 
     : equation(equ), dimensions(dim), origin(org), range(rang), domain(dom), totalpt(tot) {
         scale.x = dimensions.x / (domain.y - domain.x);
         scale.y = dimensions.y / (range.y - range.x);
@@ -42,21 +42,21 @@ struct graph_info {
     void square_scale(){
         scale.y = dimensions.y / (range.y - range.x);
         scale.x = scale.y;
-        float absDomain = dimensions.x / scale.x;               //calc domian after scale is square
-        domain = sf::Vector2f(-absDomain/2.0, absDomain/2.0);
-        float absRange = dimensions.y / scale.y;                //calc range after scale is square
-        range = sf::Vector2f(-absRange/2.0, absRange/2.0);
-        origin = sf::Vector2f(dimensions.x / 2.0, dimensions.y/ 2.0);
+        double absDomain = dimensions.x / scale.x;               //calc domian after scale is square
+        domain = sf::Vector2<double>(-absDomain/2.0, absDomain/2.0);
+        double absRange = dimensions.y / scale.y;                //calc range after scale is square
+        range = sf::Vector2<double>(-absRange/2.0, absRange/2.0);
+        origin = sf::Vector2<double>(dimensions.x / 2.0, dimensions.y/ 2.0);
     }
 
     void square_domain(){
         domain = range;
-        origin = sf::Vector2f(dimensions.x / 2.0, dimensions.y/ 2.0);
+        origin = sf::Vector2<double>(dimensions.x / 2.0, dimensions.y/ 2.0);
         reset_scale();
     }
 
-    sf::Vector2f plotDimension(){
-        return sf::Vector2f(domain.y - domain.x, range.y - range.x);
+    sf::Vector2<double> plotDimension(){
+        return sf::Vector2<double>(domain.y - domain.x, range.y - range.x);
     }
 
 };

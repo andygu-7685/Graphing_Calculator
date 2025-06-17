@@ -49,10 +49,10 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, SIDEB_UID),
 
 
     _info = new graph_info( inputStr, 
-                            sf::Vector2f(SCREEN_WIDTH - SIDEB_W, SCREEN_HEIGHT), 
-                            sf::Vector2f((SCREEN_WIDTH - SIDEB_W) / 2.0 , SCREEN_HEIGHT / 2.0),
-                            sf::Vector2f(-20, 20),
-                            sf::Vector2f(-20, 20), 400);
+                            sf::Vector2<double>(SCREEN_WIDTH - SIDEB_W, SCREEN_HEIGHT), 
+                            sf::Vector2<double>((SCREEN_WIDTH - SIDEB_W) / 2.0 , SCREEN_HEIGHT / 2.0),
+                            sf::Vector2<double>(-20, 20),
+                            sf::Vector2<double>(-20, 20), 400);
     _info->square_scale();
     system = System(_info);
     mouseIn = true;
@@ -305,7 +305,7 @@ void animate::processEvents()
 
             case sf::Keyboard::PageUp:
                 sidebar[SB_KEY_PRESSED] = "ZOOM IN";
-                ZoomScr(1, mousePos);
+                ZoomScr(1, sf::Vector2<double>(mousePos));
                 system.set_info(_info);
                 command = 7;
                 break;
@@ -313,7 +313,7 @@ void animate::processEvents()
 
             case sf::Keyboard::PageDown:
                 sidebar[SB_KEY_PRESSED] = "ZOOM OUT";
-                ZoomScr(2, mousePos);
+                ZoomScr(2, sf::Vector2<double>(mousePos));
                 system.set_info(_info);
                 command = 8;
                 break;
@@ -384,9 +384,9 @@ void animate::processEvents()
             mousePos.x = event.mouseMove.x;
             mousePos.y = event.mouseMove.y;
             if(isDragging){
-                sf::Vector2f diff(mousePos.x - dragStart.x, mousePos.y - dragStart.y);
+                sf::Vector2<double> diff(mousePos.x - dragStart.x, mousePos.y - dragStart.y);
                 PanScreen(diff);
-                dragStart = mousePos;
+                dragStart = sf::Vector2<double>(mousePos);
                 system.set_info(_info);
                 command = 8;
             }
@@ -523,7 +523,7 @@ void animate::processEvents()
             }
 
             if(event.mouseWheelScroll.delta != 0 && mouseIn){
-                ZoomScr(3, mousePos, event.mouseWheelScroll.delta, zoomMode);
+                ZoomScr(3, sf::Vector2<double>(mousePos), event.mouseWheelScroll.delta, zoomMode);
                 system.set_info(_info);
                 command = 9;
             }
@@ -551,7 +551,7 @@ void animate::processEvents()
         case sf::Event::MouseButtonPressed:
             if (event.mouseButton.button == sf::Mouse::Left) {
                 isDragging = true;
-                dragStart = mousePos;
+                dragStart = sf::Vector2<double>(mousePos);
             }
         default:
             break;
@@ -629,24 +629,24 @@ string mouse_pos_string(sf::RenderWindow &window)
 //0 = default zoom
 //1 = only zoom x
 //2 = only zoom y
-void animate::ZoomScr(int input_type, sf::Vector2f mousePos, float mouse_delta, int axis){
+void animate::ZoomScr(int input_type, sf::Vector2<double> mousePos, float mouse_delta, int axis){
     //the zoom rate depend on the ratio of the screen
-    sf::Vector2f plotDim = _info->plotDimension();                                              //plot dimension inplot coordinate
-    sf::Vector2f ZoomCenter = sf::Vector2f((_info->dimensions.x/2), (_info->dimensions.y/2));   //zoom center in screen coordinate
-    sf::Vector2f zoomFract = sf::Vector2f(plotDim.x / 30.0, plotDim.y / 30.0);                  //total delta domain & range of a zoom action
-    sf::Vector2f xratio = sf::Vector2f(1, 1);                                                   //a fraction that determin how much of the delta 
+    sf::Vector2<double> plotDim = _info->plotDimension();                                              //plot dimension inplot coordinate
+    sf::Vector2<double> ZoomCenter = sf::Vector2<double>((_info->dimensions.x/2), (_info->dimensions.y/2));   //zoom center in screen coordinate
+    sf::Vector2<double> zoomFract = sf::Vector2<double>(plotDim.x / 30.0, plotDim.y / 30.0);                  //total delta domain & range of a zoom action
+    sf::Vector2<double> xratio = sf::Vector2<double>(1, 1);                                                   //a fraction that determin how much of the delta 
                                                                                                 //domain goes on each side of the mouse pos
                                                                                                 //when adding x and y, it equal to 1 
-    sf::Vector2f yratio = sf::Vector2f(1, 1);                                                   //a fraction that determin how much of the delta 
+    sf::Vector2<double> yratio = sf::Vector2<double>(1, 1);                                                   //a fraction that determin how much of the delta 
                                                                                                 //range goes on each side of the mouse pos 
                                                                                                 //when adding x and y, it equal to 1 
     // -1 = zoom out, 1 = zoom in, 3 = no zoom
     int Zoom = 3;
     
     if(axis == 1)                      //only zoom x
-        yratio = sf::Vector2f(0,0);
+        yratio = sf::Vector2<double>(0,0);
     else if(axis == 2)                 //only zoom y
-        xratio = sf::Vector2f(0,0);
+        xratio = sf::Vector2<double>(0,0);
 
     //Keep seperate from Zoom assignment  b/c ZoomCenter need be 
     //at mousePos when at minimum range and mouse zoom
@@ -687,11 +687,11 @@ void animate::ZoomScr(int input_type, sf::Vector2f mousePos, float mouse_delta, 
 
 
     //coordinate of center of zoom relative to the origin in plotting coordinate
-    sf::Vector2f ScrO((ZoomCenter.x - _info->origin.x) / _info->scale.x,
+    sf::Vector2<double> ScrO((ZoomCenter.x - _info->origin.x) / _info->scale.x,
                       (ZoomCenter.y - _info->origin.y) / _info->scale.y);
     _info->reset_scale();
     //calculate position of the origin after zoom
-    _info->origin = sf::Vector2f (ZoomCenter.x - (ScrO.x * _info->scale.x), 
+    _info->origin = sf::Vector2<double> (ZoomCenter.x - (ScrO.x * _info->scale.x), 
                                   ZoomCenter.y - (ScrO.y * _info->scale.y));
 }
 
@@ -818,7 +818,7 @@ void animate::PanScreen(int dir){
 }
 
 
-void animate::PanScreen( sf::Vector2f diff){
+void animate::PanScreen( sf::Vector2<double> diff){
     _info->origin.x += diff.x;
     _info->origin.y += diff.y;
     _info->domain.x -= diff.x / _info->scale.x;

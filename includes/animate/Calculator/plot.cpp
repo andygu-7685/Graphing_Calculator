@@ -163,7 +163,7 @@ vector<sf::Vector2f> plot::operator()(int index, int mode){
     }
     else{
         for(double i = 0; i < _info->ArduinoIn.size(); i++){
-            sf::Vector2f coord3 = _info->ArduinoIn[i];
+            sf::Vector2f coord3(_info->ArduinoIn[i]);
             if(coord3.x > _info->domain.x && coord3.x < _info->domain.y){
                 coord3 = T(coord3);
                 points.push_back(coord3);

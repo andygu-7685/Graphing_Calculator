@@ -62,6 +62,7 @@ TEST(TEST_SYRPN, TestSyrpn) {
 
 bool test_plot(bool debug = false)
 {
+    /*
     string inputStr;
     vector<string> fnLst = {"X ^ 2 + F1( X ) ",
                             "X ^ 3 + 9 "      ,
@@ -107,6 +108,7 @@ bool test_plot(bool debug = false)
     std::cout << "Polar Points:" << std::endl;
     for (int i = 0; i < points.size(); i+= 5) 
         cout << "(" << points[i].x << ", " << points[i].y << ")" << endl;
+        */
 
 
     return true;

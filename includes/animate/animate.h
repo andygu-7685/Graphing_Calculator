@@ -35,9 +35,9 @@ public:
     int scanOverlap(sf::Vector2f testPos);
     void LoadHistory(int& errorFlag);
     vector<sf::Vector2f> LoadData(int& errorFlag, streampos& lastImport, double& lastTime);
-    void ZoomScr(int input_type, sf::Vector2f mousePos, float mouse_delta = 0, int axis = 0);
+    void ZoomScr(int input_type, sf::Vector2<double> mousePos, float mouse_delta = 0, int axis = 0);
     void PanScreen(int dir);
-    void PanScreen(sf::Vector2f diff);
+    void PanScreen(sf::Vector2<double> diff);
 
 private:
     sf::RenderWindow window;
@@ -67,7 +67,7 @@ private:
     bool INB_Hidden;                    //true if hidden, false if show
     double ArdTime;                     //time for arduino data
     streampos ArdDataPos;                  //file reading location
-    sf::Vector2f dragStart;
+    sf::Vector2<double> dragStart;
 };
 
 string mouse_pos_string(sf::RenderWindow& window);

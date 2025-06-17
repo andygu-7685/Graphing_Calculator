@@ -145,7 +145,7 @@ void graph::draw(sf::RenderWindow &window){
     }
     
 
-    pt.setPosition(_info->origin);
+    pt.setPosition(sf::Vector2f(_info->origin));
     pt.setFillColor(sf::Color(254, 0, 0));
     window.draw(pt);
 }
