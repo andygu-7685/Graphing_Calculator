@@ -19,8 +19,8 @@ bool dequ(double left, double right, double epsilon){
 
 
 
-void FunctionException(const vector<string>& fnLst, int fnIndex, vector<bool> visited) {
-    if(fnIndex > 9 || fnIndex < 0){
+void FunctionException(const vector<string>& fnLst, char fnKey, vector<bool> visited) {
+    if(fnKey > 126 || fnKey < 33){
         throw MyException(fnE1, "Error: Invalid function name");
     }
     else if (visited[fnIndex]) {
@@ -31,6 +31,7 @@ void FunctionException(const vector<string>& fnLst, int fnIndex, vector<bool> vi
         throw MyException(fnE3, "Error: function referenced do not exist");
     }
 
+    
     visited[fnIndex] = true;
     string target = fnLst[fnIndex];
     int pos = target.find("F");

@@ -10,13 +10,12 @@ void plot::set_info(graph_info* _infoIn){
     T.set_info(_info);
 }
 
-vector<sf::Vector2f> plot::operator()(int index, int mode){
+vector<sf::Vector2f> plot::operator()(string currentEqu, int mode){
     points = vector<sf::Vector2f>();
-    string currentEqu = ((index == -1) ? _info->equation : _info->plotLst[index]);
     if(mode == -1) mode = _info->Gmode;
 
     double increment = (_info->domain.y - _info->domain.x) / _info->totalpt;
-    Queue<Token*> infix1 = strToQueue(currentEqu, _info->equLst);
+    Queue<Token*> infix1 = strToQueue(currentEqu, _info->fnLst());
 
     if(infix1.empty()){
         //must push back something so the size != 0, prevent error for draw() in graph

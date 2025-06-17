@@ -48,7 +48,7 @@ animate::animate() : sidebar(SIDEB_X, SIDEB_Y, SIDEB_W, SIDEB_H, SIDEB_UID),
 
 
 
-    _info = new graph_info( inputStr, 
+    _info = new graph_info( vector<equation>(1, equation(inputStr, false, false)), 
                             sf::Vector2f(SCREEN_WIDTH - SIDEB_W, SCREEN_HEIGHT), 
                             sf::Vector2f((SCREEN_WIDTH - SIDEB_W) / 2.0 , SCREEN_HEIGHT / 2.0),
                             sf::Vector2f(-20, 20),
@@ -169,7 +169,7 @@ void animate::update()
 
     // update the sidebar with history & function, and calculate graph
     historybar.setItems(history);
-    funcbar.setFunctions(_info->equLst);
+    funcbar.setFunctions(_info->strLst());
     system.Step(command);
     
     sidebar[SB_KEY_PRESSED] = "( " + to_string(_info->range.x) + ", " + to_string(_info->range.y) + " )";
@@ -196,41 +196,7 @@ void animate::update()
 
 
 
-    //update error label
-    if(system.error().code() == DefFlag){
-        string defStr = inputStr;
-        defStr.erase(remove(defStr.begin(), defStr.end(), '\r'), defStr.end());             //remove all retrun character
-        int fnIndex = defStr[1] - '0';
-        assert(defStr.size() > 3);         //already debuged
 
-        try{
-            Queue<Token*> testQueue; 
-            testQueue = strToQueue(defStr.substr(3, defStr.size() - 3), _info->equLst);
-            ShuntingYard sytest(testQueue);
-            testQueue = sytest.postfix();
-            RPN rpntest(testQueue);
-            rpntest(1);
-
-            if(fnIndex < 10 && fnIndex >= 0){
-                (_info->equLst)[fnIndex] = defStr.substr(3, defStr.size() - 3);
-                history.push_back(defStr.substr(3, defStr.size() - 3));
-                INB_Hidden = !INB_Hidden;
-                system.clear();
-            }
-            else{
-                system.setError(MyException(invalidE, "Error: Invalid function name"));           //if the name of function defining is invalid
-            }
-        }
-        catch(MyException e){
-            system.setError(e);
-        }
-    }
-    else if(system.error().code() != -1){
-        inputbar[0] = system.error().what();
-    }
-    else{
-        inputbar[0] = "Input equation: "; 
-    }
 }
 
 void animate::render()
@@ -321,7 +287,7 @@ void animate::processEvents()
 
             case sf::Keyboard::Enter:
                 if(inputUID == INB_UID && !INB_Hidden){
-                    _info->equation = inputStr;
+                    _info->equLst.push_back(equation(inputStr, false, true));
                     cout << "input: " << inputStr << endl;
                     system.set_info(_info);
                     command = 2;
@@ -330,11 +296,48 @@ void animate::processEvents()
 
                     //if the expression has no errors
                     if(system.error().code() == -1){
-                        history.push_back(inputStr);
                         INB_Hidden = !INB_Hidden;
+                        inputbar[0] = "Input equation: "; 
                     }
                     else if(system.error().code() == DefFlag){
-                        _info->equation = " ";
+                        _info->equLst.pop_back();
+                        _info->equLst.push_back(equation(inputStr, true, true));
+                    }
+                    else{
+                        _info->equLst.pop_back();
+                        inputbar[0] = system.error().what();
+                    }
+
+
+                    //update error label
+                    if(system.error().code() == DefFlag){
+                        string defStr = inputStr;
+                        defStr.erase(remove(defStr.begin(), defStr.end(), '\r'), defStr.end());             //remove all retrun character
+                        int fnIndex = defStr[1] - '0';
+                        assert(defStr.size() > 3);         //already debuged
+
+                        try{
+                            Queue<Token*> testQueue; 
+                            testQueue = strToQueue(defStr.substr(3, defStr.size() - 3), _info->equLst);
+                            ShuntingYard sytest(testQueue);
+                            testQueue = sytest.postfix();
+                            RPN rpntest(testQueue);
+                            rpntest(1);
+
+                            
+                            if(fnIndex < 10 && fnIndex >= 0){
+                                (_info->equLst)[fnIndex] = defStr.substr(3, defStr.size() - 3);
+                                history.push_back(defStr.substr(3, defStr.size() - 3));
+                                INB_Hidden = !INB_Hidden;
+                                system.clear();
+                            }
+                            else{
+                                system.setError(MyException(invalidE, "Error: Invalid function name"));           //if the name of function defining is invalid
+                            }
+                        }
+                        catch(MyException e){
+                            system.setError(e);
+                        }
                     }
                 }
                 else if(INB_Hidden){
@@ -427,12 +430,11 @@ void animate::processEvents()
                             ofstream historyIn("historyData.txt", ios::app);
 
                             historyIn << "Base:FileState:Data:" << "\n";
-                            for(int i = 0; i < history.size(); i++)
-                                historyIn << history[i].c_str() << "\n";
-
-                            historyIn << "Base:FileState:Functions:" << "\n";
-                            for(int i = 0; i < _info->equLst.size(); i++)
-                                historyIn << _info->equLst[i].c_str() << "\n";
+                            for(int i = 0; i < _info->equLst.size(); i++){
+                                equation temp = _info->equLst[i];
+                                historyIn << temp.isFn << temp.isDisplay;
+                                historyIn << temp.expression.c_str() << "\n";
+                            }
 
                             historyIn.close();
                         }
@@ -440,11 +442,7 @@ void animate::processEvents()
                             clearfile("historyData.txt");
                             ofstream historyIn("historyData.txt", ios::app);
                             historyIn << "Base:FileState:Data:" << "\n";
-                            historyIn << "Base:FileState:Functions:" << "\n";
-                            for(int i = 0; i < _info->equLst.size(); i++)
-                                historyIn << _info->equLst[i].c_str() << "\n";
-                            
-                            history.clear();
+                            _info->equLst.clear();
                             historyIn.close();
                         }
                         else if(rowNum == ST_MODE){
@@ -479,16 +477,13 @@ void animate::processEvents()
                             cursorPos = 0;                  //reset cursor
                             //delete the item
                             if(!sidebarMode && mousePos.x > SCREEN_WIDTH - 40){
-                                _info->equLst[rowNum] = " ";
-                                funcbar.setFunctions(_info->equLst);
-                                inputStr = "";
-                                _info->equation = inputStr;
+                                _info->equLst.erase(_info->equLst.begin() + rowNum);
+                                funcbar.setFunctions(_info->strLst());
                                 system.set_info(_info);
                                 command = 2;
                             }
                             else{
-                                inputStr = funcbar[rowNum];
-                                _info->equation = inputStr;
+                                _info->equLst[rowNum].isDisplay = true;
                                 system.set_info(_info);
                                 command = 2;
                             }
@@ -496,14 +491,14 @@ void animate::processEvents()
                         break;
                     case HISTB_UID:
                         cout << "clicked history bar:";
-                        rowNum = historybar.overlapText(mousePos);
-                        if(rowNum != -1){
-                            cursorPos = 0;
-                            inputStr = historybar[rowNum];
-                            _info->equation = inputStr;
-                            system.set_info(_info);
-                            command = 2;
-                        }
+                        // rowNum = historybar.overlapText(mousePos);
+                        // if(rowNum != -1){
+                        //     cursorPos = 0;
+                        //     inputStr = historybar[rowNum];
+                        //     _info->equation = inputStr;
+                        //     system.set_info(_info);
+                        //     command = 2;
+                        // }
                         break;
                     default:
 
@@ -733,23 +728,9 @@ void animate::LoadHistory(int& errorFlag){
     }
 
     getline(fin, metaData);
-    int section = 1;        //1 = history , 2 = function
-    int fnCtr = 0;
     if(metaData == "Base:FileState:Data:"){
-        while(getline(fin, equationData)){
-            if(equationData == "Base:FileState:Functions:"){
-                section = 2;
-            }
-            else{
-                if(section == 1){
-                    history.push_back(equationData);
-                }
-                else if(section == 2){
-                    _info->equLst[fnCtr] = equationData;
-                    fnCtr++;
-                }
-            }
-        }
+        while(getline(fin, equationData))
+            _info->equLst.push_back(equation(equationData.substr(2), equationData[0] - '0', equationData[1] - '0'));
     }
 
     fin.close();

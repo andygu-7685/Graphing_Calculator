@@ -10,6 +10,7 @@ graph::graph(graph_info* _infoIn){
     _info = _infoIn;
     plotter = plot(_infoIn);
     pt = sf::CircleShape(2);
+    // the dafault value in case an error was thrown in calc plot()
     points = vector<sf::Vector2f>(1);
 
     if (!font.loadFromFile("arial.ttf"))
@@ -25,8 +26,8 @@ void graph::set_info(graph_info* _infoIn){
     plotter.set_info(_info);
 }
 
-void graph::calc_plot(int index, int mode){
-    points = plotter(index, mode);
+void graph::calc_plot(string currentEqu, int mode){
+    points = plotter(currentEqu, mode);
 }
 
 void graph::draw(sf::RenderWindow &window){

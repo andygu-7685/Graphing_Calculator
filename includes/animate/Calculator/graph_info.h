@@ -9,14 +9,14 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "equation.h"
 
 using namespace std;
 
 
 
 struct graph_info {
-    string equation;
-    vector<string> equLst = {" ", " ", " ", " ", " ", " ", " ", " ", " ", " "};
+    vector<equation> equLst;
     vector<sf::Vector2f> ArduinoIn;
     sf::Vector2f dimensions;
     sf::Vector2f origin;
@@ -27,8 +27,8 @@ struct graph_info {
     int totalpt;
     int totalgraph = 1;
 
-    graph_info(string equ, sf::Vector2f dim, sf::Vector2f org, sf::Vector2f rang, sf::Vector2f dom, int tot) 
-    : equation(equ), dimensions(dim), origin(org), range(rang), domain(dom), totalpt(tot) {
+    graph_info(vector<equation> equ, sf::Vector2f dim, sf::Vector2f org, sf::Vector2f rang, sf::Vector2f dom, int tot) 
+    : equLst(equ), dimensions(dim), origin(org), range(rang), domain(dom), totalpt(tot) {
         scale.x = dimensions.x / (domain.y - domain.x);
         scale.y = dimensions.y / (range.y - range.x);
     }
@@ -56,6 +56,32 @@ struct graph_info {
 
     sf::Vector2f plotDimension(){
         return sf::Vector2f(domain.y - domain.x, range.y - range.x);
+    }
+
+    vector<string> strLst(){
+        vector<string> allequ;
+        for(int i = 0 ; i < equLst.size(); i++){
+            allequ.push_back(equLst[i].expression);
+        }
+        return allequ;
+    }
+
+    vector<string> fnLst(){
+        vector<string> allfn;
+        for(int i = 0 ; i < equLst.size(); i++){
+            if(equLst[i].isFn)
+                allfn.push_back(equLst[i].expression);
+        }
+        return allfn;
+    }
+
+    vector<string> displayLst(){
+        vector<string> alldisplay;
+        for(int i = 0 ; i < equLst.size(); i++){
+            if(equLst[i].isDisplay)
+                alldisplay.push_back(equLst[i].expression);
+        }
+        return alldisplay;
     }
 
 };

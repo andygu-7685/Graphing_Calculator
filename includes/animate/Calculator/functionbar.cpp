@@ -23,7 +23,7 @@ void FunctionBar::setFunctions(vector<string> fnLst){
         sf::Vector2f cellSize = sf::Vector2f(_width - LEFT_MARGIN, cellHeight);
         //The UID is same for all cells, might need implementation
         FunctionCell cell(cellPos.x, cellPos.y, cellSize.x, cellSize.y, UID, 1.0, 5.0, _hidden);
-        cell[0] = "F" + to_string(fnIndexCtr) + ":" + *it;
+        cell[0] = *it;
         fnCell.push_back(cell);
         height += cellHeight + VERTICAL_LINE_SPACING;
     }

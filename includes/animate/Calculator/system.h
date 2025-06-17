@@ -25,7 +25,6 @@ public:
 
 private:
     graph_info* _info;
-    graph _graph;
     vector<graph> _g;
     int totalUID;
     MyException sysException;

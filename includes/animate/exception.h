@@ -25,7 +25,7 @@ class MyException : public exception{
 
 
 
-void FunctionException(const vector<string>& fnLst, int fnIndex, vector<bool> visited = vector<bool>(10, false));
+void FunctionException(const vector<string>& fnLst, char fnKey, vector<bool> visited);
 
 void DefinitionException(const vector<string>& fnLst, string currentDef, int defIndex);
 

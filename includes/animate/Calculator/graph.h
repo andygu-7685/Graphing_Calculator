@@ -14,7 +14,7 @@ class graph{
     graph(graph_info* _infoIn);
 
     void set_info(graph_info* _infoIn);
-    void calc_plot(int index = 0, int mode = -1);
+    void calc_plot(string currentEqu, int mode = -1);
     void draw(sf::RenderWindow &window);
 
     private:

@@ -18,7 +18,7 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd){
   transform(inputStr.begin(), inputStr.end(), inputStr.begin(), ::tolower);
   Queue<Token*> finalQueue;
   string digits;
-  int fnIndex;
+  char fnKey;
   for(int i = 0; i < inputStr.size(); i++){
     switch(inputStr[i]){
         case '+':
@@ -72,13 +72,13 @@ Queue<Token*> strToQueue(string inputStr, vector<string> fnLst, int cmd){
           ConvertDigit(digits, finalQueue);
           //invalid name will be handled in exception, so there's no fnIndex in if statement
           if(inputStr.find("(", i) == i+2){
-            fnIndex = inputStr[i+1] - '0';
+            fnKey = inputStr[i+1];
 
             //detect circular definition
             if(cmd == 0)
-              FunctionException(fnLst, fnIndex);
+              FunctionException(fnLst, fnKey, vector<bool>(fnLst.size(), false));
             
-            finalQueue.push(new Function(fnLst, fnIndex));
+            finalQueue.push(new Function(fnLst, fnKey));
             i += 1;
           }
           else if(inputStr.find(":", i) == i+2){
