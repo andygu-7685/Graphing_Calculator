@@ -9,7 +9,7 @@ TextBox::TextBox(float left, float top, float width, float height, int UIDIn, fl
     items.reserve(50);
     VERTICAL_LINE_SPACING = vertSpace;                  //defalut 10
     LEFT_MARGIN = margin;                               //default 10
-    lineColors = vector<sf::Color>(25 , sf::Color::White);
+    lineColors = vector<sf::Color>(31 , sf::Color::White);
 
     // set up the sidebar rectangle:
     rect.setFillColor(sf::Color(105, 105, 105)); //(192,192,192)); //silver

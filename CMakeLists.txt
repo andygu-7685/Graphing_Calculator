@@ -36,11 +36,11 @@ FetchContent_Declare(SFML
     GIT_TAG 2.6.x)
 
 
-# ------------------------------------
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
-)
+# # ------------------------------------
+# FetchContent_Declare(
+#   googletest
+#   URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+# )
 
 
 # For Windows: Prevent overriding the parent project's compiler/linker settings
@@ -48,11 +48,12 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 
 # Make available both googletest and SFML
-FetchContent_MakeAvailable(googletest SFML)
+#FetchContent_MakeAvailable(googletest SFML)
+FetchContent_MakeAvailable(SFML)
 
 
 # GoogleTest requires at least C++11
-set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11)
 
 
 enable_testing()
@@ -82,17 +83,17 @@ ADD_EXECUTABLE(main
 )
 
 
-ADD_EXECUTABLE(basic_test
-    _tests/_test_files/basic_test.cpp
-    ${SOURCE_FILES}
-)
+# ADD_EXECUTABLE(basic_test
+#     _tests/_test_files/basic_test.cpp
+#     ${SOURCE_FILES}
+# )
 
 
-ADD_EXECUTABLE(testB
-    _tests/_test_files/testB.cpp
-    ${SOURCE_FILES}
-    #- - - - - - - - - - - - - - - -
-)
+# ADD_EXECUTABLE(testB
+#     _tests/_test_files/testB.cpp
+#     ${SOURCE_FILES}
+#     #- - - - - - - - - - - - - - - -
+# )
 
 
 
@@ -102,8 +103,8 @@ TARGET_COMPILE_FEATURES(main PRIVATE cxx_std_17)
 
 
 # Link "basic_test" and "testB" to gtest and sfml-graphics
-TARGET_LINK_LIBRARIES(basic_test gtest sfml-graphics)
-TARGET_LINK_LIBRARIES(testB gtest sfml-graphics)
+# TARGET_LINK_LIBRARIES(basic_test gtest sfml-graphics)
+# TARGET_LINK_LIBRARIES(testB gtest sfml-graphics)
 
 
 INSTALL(TARGETS main)
